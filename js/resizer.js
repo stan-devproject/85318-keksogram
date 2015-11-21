@@ -97,6 +97,15 @@
       // Смещение первого штриха от начала линии.
       this._ctx.lineDashOffset = 7;
 
+      // На сколько пикселей вверх над обрезающей рамкой рисовать текст с его размерами
+      var LINE_OUTPUT_Y_OFFSET = 10;
+
+      // Шрифт текста с размерами обрезающей рамки
+      var LINE_OUTPUT_FONT = "16px serif";
+
+      // Цвет текста с размерами обрезающей рамки
+      var LINE_OUTPUT_COLOR = "#fff";
+
       // Сохранение состояния канваса.
       // Подробней см. строку 132.
       this._ctx.save();
@@ -111,13 +120,162 @@
       // Координаты задаются от центра холста.
       this._ctx.drawImage(this._image, displX, displY);
 
+      // Координаты крайней правой нижней точки изображения.
+      var displMaxX = displX + this._container.width;
+      var displMaxY = displY + this._container.height;
+
+      // Половина толщины линии обводки (для удобства расчетов).
+      var lineWidthMoiety = this._ctx.lineWidth / 2;
+
+      // Координаты прямоугольника, обозначающего область изображения после
+      // кадрирования.
+      var rectX = (-this._resizeConstraint.side / 2) - lineWidthMoiety;
+      var rectY = (-this._resizeConstraint.side / 2) - lineWidthMoiety;
+
+      // Координаты крайней правой нижней точки обрезающей области.
+      var rectMaxX = rectX + this._resizeConstraint.side;
+      var rectMaxY = rectY + this._resizeConstraint.side;
+
+      // Ширина и высота прямоугольника, обозначающего область изображения после кадрирования.
+      var rectWidth = this._resizeConstraint.side - lineWidthMoiety;
+      var rectHeight = this._resizeConstraint.side - lineWidthMoiety;
+
       // Отрисовка прямоугольника, обозначающего область изображения после
       // кадрирования. Координаты задаются от центра.
-      this._ctx.strokeRect(
-          (-this._resizeConstraint.side / 2) - this._ctx.lineWidth / 2,
-          (-this._resizeConstraint.side / 2) - this._ctx.lineWidth / 2,
-          this._resizeConstraint.side - this._ctx.lineWidth / 2,
-          this._resizeConstraint.side - this._ctx.lineWidth / 2);
+      this._ctx.strokeRect(rectX, rectY, rectWidth, rectHeight);
+
+      // Задаем параметры затемнения областей, которые потом не попадут в итоговое изображение.
+      this._ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+
+      // Если нужно рисовать затемняющий прямоугольник в верхней части.
+      if ((rectY - lineWidthMoiety) > displY) {
+        // При условии, если верхний край изображения не опущен ниже верхнего края обрезающей рамки.
+        // И при условии, если нижний край изображения не поднят выше верхнего края обрезающей рамки.
+        if ((displY <= rectMaxY) && (displMaxY >= (rectY - lineWidthMoiety))) {
+          this._ctx.fillRect(
+            displX,
+            displY,
+            this._container.width,
+            (rectY - displY - lineWidthMoiety)
+          );
+        }
+        // А при условии, если нижний край изображения поднят выше обрезающей рамки,
+        // затемняем все изображение.
+        else if (displMaxY < (rectY - lineWidthMoiety)) {
+          this._ctx.fillRect(
+            displX,
+            displY,
+            this._container.width,
+            this._container.height
+          );
+        }
+      }
+
+      // Если нужно рисовать затемняющий прямоугольник в нижней части.
+      if (rectMaxY < displMaxY) {
+        // При условии, если нижний край изображения находится ниже нижнего края обрезающей рамки.
+        // И при условии, если верхний край изображения находится выше нижнего края обрезающей рамки.
+        if ((displMaxY > (rectMaxY - lineWidthMoiety)) && (displY <= rectMaxY)) {
+          this._ctx.fillRect(
+            displX,
+            rectMaxY,
+            this._container.width,
+            (displMaxY - rectMaxY)
+          );
+        }
+        // При условии, если верхний край изображения опущен ниже нижнего края обрезающей рамки.
+        // затемняем все изображение.
+        else if (displY > rectMaxY) {
+          this._ctx.fillRect(
+            displX,
+            displY,
+            this._container.width,
+            this._container.height
+          );
+
+        }
+      }
+
+      // Если нужно рисовать затемняющий прямоугольник в левой части.
+      if (((rectX - lineWidthMoiety) > displX)) {
+          // При условии, если нижний край изображения находится ниже верхнего края обрезающей рамки.
+          // И при условии, если верхний край изображения находится выше нижнего края обрезающей рамки.
+          if ((displMaxY >= (rectY - lineWidthMoiety)) && (displY <= rectMaxY)) {
+            // Если верхний край изображения находится ниже верхнего края обрезающей рамки.
+            if (displY >= (rectY - lineWidthMoiety)) {
+              this._ctx.fillRect(
+                displX,
+                displY,
+                (rectX - lineWidthMoiety - displX),
+                (rectMaxY - displY)
+              );
+            }
+            // Если нижний край изображения находится выше нижнего края обрезающей рамки.
+            else if (displMaxY < rectMaxY) {
+              this._ctx.fillRect(
+                displX,
+                (rectY - lineWidthMoiety),
+                (rectX - lineWidthMoiety - displX),
+                (displMaxY + lineWidthMoiety - rectY)
+              );
+            }
+            // Если изображение по высоте занимает всю высоту обрезающей рамки, т.е.
+            else {
+              this._ctx.fillRect(
+                displX,
+                (rectY - lineWidthMoiety),
+                (rectX - lineWidthMoiety - displX),
+                (rectMaxY + lineWidthMoiety - rectY)
+              );
+            }
+          }
+      }
+
+
+      // Если нужно рисовать затемняющий прямоугольник в правой части.
+      if (displMaxX > rectMaxX) {
+        // При условии, если нижний край изображения находится ниже верхнего края обрезающей рамки.
+        // И при условии, если верхний край изображения находится выше нижнего края обрезающей рамки.
+        if ((displMaxY >= (rectY - lineWidthMoiety)) && (displY <= rectMaxY)) {
+          // Если верхний край изображения находится ниже верхнего края обрезающей рамки.
+          if (displY >= (rectY - lineWidthMoiety)) {
+            this._ctx.fillRect(
+              rectMaxX,
+              displY,
+              (displMaxX - rectMaxX),
+              (rectMaxY - displY)
+            );
+          }
+          // Если нижний край изображения находится выше нижнего края обрезающей рамки.
+          else if (displMaxY < rectMaxY) {
+            this._ctx.fillRect(
+              rectMaxX,
+              (rectY - lineWidthMoiety),
+              (displMaxX - rectMaxX),
+              (displMaxY - rectY + lineWidthMoiety)
+            );
+          }
+          // Если изображение по высоте занимает всю высоту обрезающей рамки, т.е.
+          else {
+            this._ctx.fillRect(
+              rectMaxX,
+              (rectY - lineWidthMoiety),
+              (displMaxX - rectMaxX),
+              (rectMaxY + lineWidthMoiety - rectY)
+            );
+          }
+        }
+      }
+
+
+      // Добавление текстовой строчки с размерами кадрируемого изображения.
+      var lineSizeOutput = this._image.naturalWidth + ' x ' + this._image.naturalHeight;
+      var lineSizeOutputX = rectX + (this._resizeConstraint.side / 2) - (this._ctx.measureText(lineSizeOutput).width / 2);
+      var lineSizeOutputY = rectY - LINE_OUTPUT_Y_OFFSET;
+
+      this._ctx.font = LINE_OUTPUT_FONT;
+      this._ctx.fillStyle = LINE_OUTPUT_COLOR;
+      this._ctx.fillText(lineSizeOutput, lineSizeOutputX, lineSizeOutputY);
 
       // Восстановление состояния канваса, которое было до вызова ctx.save
       // и последующего изменения системы координат. Нужно для того, чтобы
