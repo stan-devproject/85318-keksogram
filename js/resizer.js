@@ -113,11 +113,25 @@
       // Установка начальной точки системы координат в центр холста.
       this._ctx.translate(this._container.width / 2, this._container.height / 2);
 
+      // Далее координаты задаются от центра холста.
+
+      // Подсчитываем начальную левую-верхнюю точку канваса
+      // Не использую displX, displY, так как они возвращают позицию изображения,
+      // а в будущем его может быть потребуется сместить.
+      var canvasX = -(this._container.width / 2);
+      var canvasY = -(this._container.height / 2);
+
+      // И правую-нижнюю точку канваса.
+      var canvasMaxX = (this._container.width / 2);
+      var canvasMaxY = (this._container.width / 2);
+
+      // Координаты (левая верхняя точка) изображения.
       var displX = -(this._resizeConstraint.x + this._resizeConstraint.side / 2);
       var displY = -(this._resizeConstraint.y + this._resizeConstraint.side / 2);
-      // Отрисовка изображения на холсте. Параметры задают изображение, которое
+
+      // Отрисовка изображения на холсте.
+      // Параметры задают изображение, которое
       // нужно отрисовать и координаты его верхнего левого угла.
-      // Координаты задаются от центра холста.
       this._ctx.drawImage(this._image, displX, displY);
 
       // Координаты крайней правой нижней точки изображения.
@@ -147,125 +161,38 @@
       // Задаем параметры затемнения областей, которые потом не попадут в итоговое изображение.
       this._ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
 
-      // Если нужно рисовать затемняющий прямоугольник в верхней части.
-      if ((rectY - lineWidthMoiety) > displY) {
-        // При условии, если верхний край изображения не опущен ниже верхнего края обрезающей рамки.
-        // И при условии, если нижний край изображения не поднят выше верхнего края обрезающей рамки.
-        if ((displY <= rectMaxY) && (displMaxY >= (rectY - lineWidthMoiety))) {
-          this._ctx.fillRect(
-            displX,
-            displY,
-            this._container.width,
-            (rectY - displY - lineWidthMoiety)
-          );
-        }
-        // А при условии, если нижний край изображения поднят выше обрезающей рамки,
-        // затемняем все изображение.
-        else if (displMaxY < (rectY - lineWidthMoiety)) {
-          this._ctx.fillRect(
-            displX,
-            displY,
-            this._container.width,
-            this._container.height
-          );
-        }
-      }
+      // Добавляем прямоугольники для затемнения части изображения, которое не обрезается.
+      // Верхний прямоугольник.
+      this._ctx.fillRect(
+        canvasX,
+        canvasY,
+        this._container.width,
+        (rectY - lineWidthMoiety - canvasY)
+      );
 
-      // Если нужно рисовать затемняющий прямоугольник в нижней части.
-      if (rectMaxY < displMaxY) {
-        // При условии, если нижний край изображения находится ниже нижнего края обрезающей рамки.
-        // И при условии, если верхний край изображения находится выше нижнего края обрезающей рамки.
-        if ((displMaxY > (rectMaxY - lineWidthMoiety)) && (displY <= rectMaxY)) {
-          this._ctx.fillRect(
-            displX,
-            rectMaxY,
-            this._container.width,
-            (displMaxY - rectMaxY)
-          );
-        }
-        // При условии, если верхний край изображения опущен ниже нижнего края обрезающей рамки.
-        // затемняем все изображение.
-        else if (displY > rectMaxY) {
-          this._ctx.fillRect(
-            displX,
-            displY,
-            this._container.width,
-            this._container.height
-          );
+      // Левый прямоугольник (высота как и у обрезающей рамки)
+      this._ctx.fillRect(
+        canvasX,
+        (rectY - lineWidthMoiety),
+        (rectY - lineWidthMoiety - canvasY),
+        (this._resizeConstraint.side + lineWidthMoiety)
+      );
 
-        }
-      }
+      // Правый прямоугольник (высота как и у обрезающей рамки)
+      this._ctx.fillRect(
+        rectMaxX,
+        (rectY - lineWidthMoiety),
+        (canvasMaxX - rectMaxX + lineWidthMoiety),
+        (this._resizeConstraint.side + lineWidthMoiety)
+      );
 
-      // Если нужно рисовать затемняющий прямоугольник в левой части.
-      if (((rectX - lineWidthMoiety) > displX)) {
-          // При условии, если нижний край изображения находится ниже верхнего края обрезающей рамки.
-          // И при условии, если верхний край изображения находится выше нижнего края обрезающей рамки.
-          if ((displMaxY >= (rectY - lineWidthMoiety)) && (displY <= rectMaxY)) {
-            // Если верхний край изображения находится ниже верхнего края обрезающей рамки.
-            if (displY >= (rectY - lineWidthMoiety)) {
-              this._ctx.fillRect(
-                displX,
-                displY,
-                (rectX - lineWidthMoiety - displX),
-                (rectMaxY - displY)
-              );
-            }
-            // Если нижний край изображения находится выше нижнего края обрезающей рамки.
-            else if (displMaxY < rectMaxY) {
-              this._ctx.fillRect(
-                displX,
-                (rectY - lineWidthMoiety),
-                (rectX - lineWidthMoiety - displX),
-                (displMaxY + lineWidthMoiety - rectY)
-              );
-            }
-            // Если изображение по высоте занимает всю высоту обрезающей рамки, т.е.
-            else {
-              this._ctx.fillRect(
-                displX,
-                (rectY - lineWidthMoiety),
-                (rectX - lineWidthMoiety - displX),
-                (rectMaxY + lineWidthMoiety - rectY)
-              );
-            }
-          }
-      }
-
-
-      // Если нужно рисовать затемняющий прямоугольник в правой части.
-      if (displMaxX > rectMaxX) {
-        // При условии, если нижний край изображения находится ниже верхнего края обрезающей рамки.
-        // И при условии, если верхний край изображения находится выше нижнего края обрезающей рамки.
-        if ((displMaxY >= (rectY - lineWidthMoiety)) && (displY <= rectMaxY)) {
-          // Если верхний край изображения находится ниже верхнего края обрезающей рамки.
-          if (displY >= (rectY - lineWidthMoiety)) {
-            this._ctx.fillRect(
-              rectMaxX,
-              displY,
-              (displMaxX - rectMaxX),
-              (rectMaxY - displY)
-            );
-          }
-          // Если нижний край изображения находится выше нижнего края обрезающей рамки.
-          else if (displMaxY < rectMaxY) {
-            this._ctx.fillRect(
-              rectMaxX,
-              (rectY - lineWidthMoiety),
-              (displMaxX - rectMaxX),
-              (displMaxY - rectY + lineWidthMoiety)
-            );
-          }
-          // Если изображение по высоте занимает всю высоту обрезающей рамки, т.е.
-          else {
-            this._ctx.fillRect(
-              rectMaxX,
-              (rectY - lineWidthMoiety),
-              (displMaxX - rectMaxX),
-              (rectMaxY + lineWidthMoiety - rectY)
-            );
-          }
-        }
-      }
+      // Нижний прямоугольник
+      this._ctx.fillRect(
+        canvasX,
+        rectMaxY,
+        this._container.width,
+        (canvasMaxY - rectMaxY + lineWidthMoiety)
+      );
 
 
       // Добавление текстовой строчки с размерами кадрируемого изображения.
