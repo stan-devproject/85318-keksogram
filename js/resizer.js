@@ -101,6 +101,10 @@
       // Цвет текста с размерами обрезающей рамки
       var LINE_OUTPUT_COLOR = '#fff';
 
+      // Отступ от границы изображения до затемняющей рамки.
+      // Значение по умолчанию, меняется ниже в зависимости от режима отрисовки рамки.
+      var lineWidthMoiety = 6;
+
       if (RECT_BORDER_STYLE === 'default') {
         // Толщина линии.
         this._ctx.lineWidth = 6;
@@ -113,7 +117,7 @@
         this._ctx.lineDashOffset = 7;
         // Отступ для обрезающей рамки.
         // В данном случае берется, как половина толщины линии обводки.
-        var lineWidthMoiety = this._ctx.lineWidth / 2;
+        lineWidthMoiety = this._ctx.lineWidth / 2;
 
       } else if (RECT_BORDER_STYLE === 'dotted') {
         // Убираем линию обводки.
@@ -121,7 +125,7 @@
         // Цвет обводки.
         this._ctx.strokeStyle = 'transparent';
         // Отступ от обрезающей рамки.
-        var lineWidthMoiety = 3;
+        lineWidthMoiety = 3;
         // Цвет точек.
         var RECT_BORDER_DOT_COLOR = 'yellow';
         // Радиус точек.
@@ -182,28 +186,28 @@
 
         this._ctx.moveTo(rectX, rectY);
 
-        for (var i = rectX + RECT_BORDER_DOT_START_OFFSET; (i + 2*RECT_BORDER_DOT_RADIUS) <= rectMaxX; i += 2 * RECT_BORDER_DOT_RADIUS + RECT_BORDER_DOT_OFFSET) {
+        for (var i = rectX + RECT_BORDER_DOT_START_OFFSET; (i + 2 * RECT_BORDER_DOT_RADIUS) <= rectMaxX; i += 2 * RECT_BORDER_DOT_RADIUS + RECT_BORDER_DOT_OFFSET) {
           this._ctx.arc(i, rectY, RECT_BORDER_DOT_RADIUS, 0, 2 * Math.PI);
         }
 
         this._ctx.fill();
         this._ctx.beginPath();
 
-        for (var i = rectY + RECT_BORDER_DOT_START_OFFSET; (i + 2*RECT_BORDER_DOT_RADIUS) <= rectMaxY; i += 2 * RECT_BORDER_DOT_RADIUS + RECT_BORDER_DOT_OFFSET) {
+        for (i = rectY + RECT_BORDER_DOT_START_OFFSET; (i + 2 * RECT_BORDER_DOT_RADIUS) <= rectMaxY; i += 2 * RECT_BORDER_DOT_RADIUS + RECT_BORDER_DOT_OFFSET) {
           this._ctx.arc(rectMaxX - lineWidthMoiety, i, RECT_BORDER_DOT_RADIUS, 0, 2 * Math.PI);
         }
 
         this._ctx.fill();
         this._ctx.beginPath();
 
-        for (var i = rectMaxX - lineWidthMoiety - RECT_BORDER_DOT_START_OFFSET; (i - 2*RECT_BORDER_DOT_RADIUS) >= rectX; i -= 2 * RECT_BORDER_DOT_RADIUS + RECT_BORDER_DOT_OFFSET) {
+        for (i = rectMaxX - lineWidthMoiety - RECT_BORDER_DOT_START_OFFSET; (i - 2 * RECT_BORDER_DOT_RADIUS) >= rectX; i -= 2 * RECT_BORDER_DOT_RADIUS + RECT_BORDER_DOT_OFFSET) {
           this._ctx.arc(i, rectMaxY - lineWidthMoiety, RECT_BORDER_DOT_RADIUS, 0, 2 * Math.PI);
         }
 
         this._ctx.fill();
         this._ctx.beginPath();
 
-        for (var i = rectMaxY - lineWidthMoiety - RECT_BORDER_DOT_START_OFFSET; (i - 2*RECT_BORDER_DOT_RADIUS) >= rectY; i -= 2 * RECT_BORDER_DOT_RADIUS + RECT_BORDER_DOT_OFFSET) {
+        for (i = rectMaxY - lineWidthMoiety - RECT_BORDER_DOT_START_OFFSET; (i - 2 * RECT_BORDER_DOT_RADIUS) >= rectY; i -= 2 * RECT_BORDER_DOT_RADIUS + RECT_BORDER_DOT_OFFSET) {
           this._ctx.arc(rectX, i, RECT_BORDER_DOT_RADIUS, 0, 2 * Math.PI);
         }
 
