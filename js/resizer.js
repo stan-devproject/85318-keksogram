@@ -87,24 +87,50 @@
       // canvas'a поэтому важно вовремя поменять их, если нужно начать отрисовку
       // чего-либо с другой обводкой.
 
-      // Толщина линии.
-      this._ctx.lineWidth = 6;
-      // Цвет обводки.
-      this._ctx.strokeStyle = '#ffe753';
-      // Размер штрихов. Первый элемент массива задает длину штриха, второй
-      // расстояние между соседними штрихами.
-      this._ctx.setLineDash([15, 10]);
-      // Смещение первого штриха от начала линии.
-      this._ctx.lineDashOffset = 7;
+      // Выберите тип линии-обводки.
+      // default - стандартные крупные штрихи
+      // dotted - желтые точки
+      var RECT_BORDER_STYLE = 'dotted';
 
       // На сколько пикселей вверх над обрезающей рамкой рисовать текст с его размерами
       var LINE_OUTPUT_Y_OFFSET = 10;
 
       // Шрифт текста с размерами обрезающей рамки
-      var LINE_OUTPUT_FONT = "16px serif";
+      var LINE_OUTPUT_FONT = '16px serif';
 
       // Цвет текста с размерами обрезающей рамки
-      var LINE_OUTPUT_COLOR = "#fff";
+      var LINE_OUTPUT_COLOR = '#fff';
+
+      if (RECT_BORDER_STYLE === 'default') {
+        // Толщина линии.
+        this._ctx.lineWidth = 6;
+        // Цвет обводки.
+        this._ctx.strokeStyle = '#ffe753';
+        // Размер штрихов. Первый элемент массива задает длину штриха, второй
+        // расстояние между соседними штрихами.
+        this._ctx.setLineDash([15, 10]);
+        // Смещение первого штриха от начала линии.
+        this._ctx.lineDashOffset = 7;
+        // Отступ для обрезающей рамки.
+        // В данном случае берется, как половина толщины линии обводки.
+        var lineWidthMoiety = this._ctx.lineWidth / 2;
+
+      } else if (RECT_BORDER_STYLE === 'dotted') {
+        // Убираем линию обводки.
+        this._ctx.lineWidth = 0;
+        // Цвет обводки.
+        this._ctx.strokeStyle = 'transparent';
+        // Отступ от обрезающей рамки.
+        var lineWidthMoiety = 3;
+        // Цвет точек.
+        var RECT_BORDER_DOT_COLOR = 'yellow';
+        // Радиус точек.
+        var RECT_BORDER_DOT_RADIUS = 2;
+        // Отступ между точками.
+        var RECT_BORDER_DOT_OFFSET = 3;
+        // Стартовый отступ.
+        var RECT_BORDER_DOT_START_OFFSET = 0;
+      }
 
       // Сохранение состояния канваса.
       // Подробней см. строку 132.
@@ -134,13 +160,6 @@
       // нужно отрисовать и координаты его верхнего левого угла.
       this._ctx.drawImage(this._image, displX, displY);
 
-      // Координаты крайней правой нижней точки изображения.
-      var displMaxX = displX + this._container.width;
-      var displMaxY = displY + this._container.height;
-
-      // Половина толщины линии обводки (для удобства расчетов).
-      var lineWidthMoiety = this._ctx.lineWidth / 2;
-
       // Координаты прямоугольника, обозначающего область изображения после
       // кадрирования.
       var rectX = (-this._resizeConstraint.side / 2) - lineWidthMoiety;
@@ -153,6 +172,43 @@
       // Ширина и высота прямоугольника, обозначающего область изображения после кадрирования.
       var rectWidth = this._resizeConstraint.side - lineWidthMoiety;
       var rectHeight = this._resizeConstraint.side - lineWidthMoiety;
+
+      // Отрисовка обводки желтыми точками, если требуется.
+      // Иначе рисуется обводка по умолчанию.
+      if (RECT_BORDER_STYLE === 'dotted') {
+        this._ctx.beginPath();
+
+        this._ctx.fillStyle = RECT_BORDER_DOT_COLOR;
+
+        this._ctx.moveTo(rectX, rectY);
+
+        for (var i = rectX + RECT_BORDER_DOT_START_OFFSET; (i + 2*RECT_BORDER_DOT_RADIUS) <= rectMaxX; i += 2 * RECT_BORDER_DOT_RADIUS + RECT_BORDER_DOT_OFFSET) {
+          this._ctx.arc(i, rectY, RECT_BORDER_DOT_RADIUS, 0, 2 * Math.PI);
+        }
+
+        this._ctx.fill();
+        this._ctx.beginPath();
+
+        for (var i = rectY + RECT_BORDER_DOT_START_OFFSET; (i + 2*RECT_BORDER_DOT_RADIUS) <= rectMaxY; i += 2 * RECT_BORDER_DOT_RADIUS + RECT_BORDER_DOT_OFFSET) {
+          this._ctx.arc(rectMaxX - lineWidthMoiety, i, RECT_BORDER_DOT_RADIUS, 0, 2 * Math.PI);
+        }
+
+        this._ctx.fill();
+        this._ctx.beginPath();
+
+        for (var i = rectMaxX - lineWidthMoiety - RECT_BORDER_DOT_START_OFFSET; (i - 2*RECT_BORDER_DOT_RADIUS) >= rectX; i -= 2 * RECT_BORDER_DOT_RADIUS + RECT_BORDER_DOT_OFFSET) {
+          this._ctx.arc(i, rectMaxY - lineWidthMoiety, RECT_BORDER_DOT_RADIUS, 0, 2 * Math.PI);
+        }
+
+        this._ctx.fill();
+        this._ctx.beginPath();
+
+        for (var i = rectMaxY - lineWidthMoiety - RECT_BORDER_DOT_START_OFFSET; (i - 2*RECT_BORDER_DOT_RADIUS) >= rectY; i -= 2 * RECT_BORDER_DOT_RADIUS + RECT_BORDER_DOT_OFFSET) {
+          this._ctx.arc(rectX, i, RECT_BORDER_DOT_RADIUS, 0, 2 * Math.PI);
+        }
+
+        this._ctx.fill();
+      }
 
       // Отрисовка прямоугольника, обозначающего область изображения после
       // кадрирования. Координаты задаются от центра.
