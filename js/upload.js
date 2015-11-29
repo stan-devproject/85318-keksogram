@@ -86,11 +86,22 @@
    * @return {boolean}
    */
   function resizeFormIsValid() {
-
     return (resizeFormInputXIsValid() && resizeFormInputYIsValid() && resizeFormInputSizeIsValid());
   }
 
   function resizeFormInputXIsValid() {
+    if (formInputResizeX.value === '') {
+      return false;
+    }
+
+    if (isNaN(Number(formInputResizeX.value))) {
+      return false;
+    }
+
+    if (!(/[0-9]+/.test(formInputResizeX.value))) {
+      return false;
+    }
+
     if (Number(formInputResizeX.value) < 0) {
       return false;
     }
@@ -103,6 +114,18 @@
   }
 
   function resizeFormInputYIsValid() {
+    if (formInputResizeY.value === '') {
+      return false;
+    }
+
+    if (isNaN(Number(formInputResizeY.value))) {
+      return false;
+    }
+
+    if (!(/[0-9]+/.test(formInputResizeY.value))) {
+      return false;
+    }
+
     if (Number(formInputResizeY.value) < 0) {
       return false;
     }
@@ -115,6 +138,18 @@
   }
 
   function resizeFormInputSizeIsValid() {
+    if (formInputResizeSize === '') {
+      return false;
+    }
+
+    if (isNaN(Number(formInputResizeSize.value))) {
+      return false;
+    }
+
+    if (!(/[0-9]+/.test(formInputResizeSize.value))) {
+      return false;
+    }
+
     if ((Number(formInputResizeSize.value) <= 0)) {
       return false;
     }
@@ -291,6 +326,12 @@
     }
   };
 
+  filterMap = {
+    'none': 'filter-none',
+    'chrome': 'filter-chrome',
+    'sepia': 'filter-sepia'
+  };
+
   /**
    * Сброс формы фильтра. Показывает форму кадрирования.
    * @param {Event} evt
@@ -322,17 +363,6 @@
    * выбранному значению в форме.
    */
   filterForm.onchange = function() {
-    if (!filterMap) {
-      // Ленивая инициализация. Объект не создается до тех пор, пока
-      // не понадобится прочитать его в первый раз, а после этого запоминается
-      // навсегда.
-      filterMap = {
-        'none': 'filter-none',
-        'chrome': 'filter-chrome',
-        'sepia': 'filter-sepia'
-      };
-    }
-
     var selectedFilter = [].filter.call(filterForm['upload-filter'], function(item) {
       return item.checked;
     })[0].value;

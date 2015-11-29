@@ -36,14 +36,14 @@
       // Изначально предлагаемое кадрирование — часть по центру с размером в 3/4
       // от размера меньшей стороны.
       this._resizeConstraint = new Square(
-          this._container.width / 2 - side / 2,
-          this._container.height / 2 - side / 2,
-          side);
+          Math.round(this._container.width / 2 - side / 2),
+          Math.round(this._container.height / 2 - side / 2),
+          Math.round(side));
 
       // Задаем начальные значения полям Слева, Сверху и Сторона.
-      formInputResizeX.value = this._container.width / 2 - side / 2;
-      formInputResizeY.value = this._container.height / 2 - side / 2;
-      formInputResizeSize.value = side;
+      formInputResizeX.value = Math.round(this._container.width / 2 - side / 2);
+      formInputResizeY.value = Math.round(this._container.height / 2 - side / 2);
+      formInputResizeSize.value = Math.round(side);
 
       // Отрисовка изначального состояния канваса.
       this.redraw();
