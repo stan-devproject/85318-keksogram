@@ -43,16 +43,16 @@
 
 
   // Поле "Слева".
-  var formInputResizeX = document.getElementById("resize-x");
+  var formInputResizeX = document.getElementById('resize-x');
 
   // Поле "Сверху".
-  var formInputResizeY = document.getElementById("resize-y");
+  var formInputResizeY = document.getElementById('resize-y');
 
   // Поле "Сторона".
-  var formInputResizeSize = document.getElementById("resize-size");
+  var formInputResizeSize = document.getElementById('resize-size');
 
   // Кнопка-значек "Вперед".
-  var formControlButtonFwd = document.getElementById("resize-fwd");
+  var formControlButtonFwd = document.getElementById('resize-fwd');
 
   /**
    * Удаляет текущий объект {@link Resizer}, чтобы создать новый с другим
@@ -122,7 +122,7 @@
     return true;
   }
 
-  function checkResizeFormValidity(evt) {
+  function checkResizeFormValidity() {
     if (!resizeFormInputXIsValid()) {
       setErrorMessage(formInputResizeX);
     } else {
@@ -149,14 +149,14 @@
   }
 
   function setErrorMessage(formInput) {
-    if (!formInput.classList.contains("js-input-error")) {
-      formInput.classList.add("js-input-error");
+    if (!formInput.classList.contains('js-input-error')) {
+      formInput.classList.add('js-input-error');
     }
   }
 
   function removeErrorMessage(formInput) {
-    if (formInput.classList.contains("js-input-error")) {
-      formInput.classList.remove("js-input-error");
+    if (formInput.classList.contains('js-input-error')) {
+      formInput.classList.remove('js-input-error');
     }
   }
 
