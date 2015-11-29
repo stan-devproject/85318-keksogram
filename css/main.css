@@ -178,6 +178,17 @@ body {
   float: right;
 }
 
+.upload-form-controls-fwd:disabled {
+  background-color: rgba(255, 248, 214, 0.1);
+  background-image: none;
+  cursor: default;
+}
+
+/* Добавляется к resize полям через js при наличии в них ошибки. */
+.js-input-error {
+  background-color: #c0392b;
+}
+
 .upload-resize canvas {
   cursor: move;
   left: 50%;
@@ -216,6 +227,7 @@ body {
   text-align: center;
   vertical-align: middle;
   width: 3em;
+  outline: none;
 }
 
 .upload-filter-controls {

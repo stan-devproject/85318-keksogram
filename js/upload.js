@@ -41,6 +41,19 @@
    */
   var currentResizer;
 
+
+  // Поле "Слева".
+  var formInputResizeX = document.getElementById("resize-x");
+
+  // Поле "Сверху".
+  var formInputResizeY = document.getElementById("resize-y");
+
+  // Поле "Сторона".
+  var formInputResizeSize = document.getElementById("resize-size");
+
+  // Кнопка-значек "Вперед".
+  var formControlButtonFwd = document.getElementById("resize-fwd");
+
   /**
    * Удаляет текущий объект {@link Resizer}, чтобы создать новый с другим
    * изображением.
@@ -69,11 +82,87 @@
 
   /**
    * Проверяет, валидны ли данные, в форме кадрирования.
+   * То есть все проверки формы в одном месте.
    * @return {boolean}
    */
   function resizeFormIsValid() {
+
+    return (resizeFormInputXIsValid() && resizeFormInputYIsValid() && resizeFormInputSizeIsValid());
+  }
+
+  function resizeFormInputXIsValid() {
+    if (Number(formInputResizeX.value) < 0) {
+      return false;
+    }
+
+    if ((Number(formInputResizeX.value) + Number(formInputResizeSize.value)) > currentResizer._image.naturalWidth) {
+      return false;
+    }
+
     return true;
   }
+
+  function resizeFormInputYIsValid() {
+    if (Number(formInputResizeY.value) < 0) {
+      return false;
+    }
+
+    if ((Number(formInputResizeY.value) + Number(formInputResizeSize.value)) > currentResizer._image.naturalHeight) {
+      return false;
+    }
+
+    return true;
+  }
+
+  function resizeFormInputSizeIsValid() {
+    if ((Number(formInputResizeSize.value) <= 0)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  function checkResizeFormValidity(evt) {
+    if (!resizeFormInputXIsValid()) {
+      setErrorMessage(formInputResizeX);
+    } else {
+      removeErrorMessage(formInputResizeX);
+    }
+
+    if (!resizeFormInputYIsValid()) {
+      setErrorMessage(formInputResizeY);
+    } else {
+      removeErrorMessage(formInputResizeY);
+    }
+
+    if (!resizeFormInputSizeIsValid()) {
+      setErrorMessage(formInputResizeSize);
+    } else {
+      removeErrorMessage(formInputResizeSize);
+    }
+
+    if (resizeFormIsValid()) {
+      formControlButtonFwd.disabled = '';
+    } else {
+      formControlButtonFwd.disabled = 'disabled';
+    }
+  }
+
+  function setErrorMessage(formInput) {
+    if (!formInput.classList.contains("js-input-error")) {
+      formInput.classList.add("js-input-error");
+    }
+  }
+
+  function removeErrorMessage(formInput) {
+    if (formInput.classList.contains("js-input-error")) {
+      formInput.classList.remove("js-input-error");
+    }
+  }
+
+  formInputResizeX.onchange = checkResizeFormValidity;
+  formInputResizeY.onchange = checkResizeFormValidity;
+  formInputResizeSize.onchange = checkResizeFormValidity;
 
   /**
    * Форма загрузки изображения.
@@ -152,7 +241,7 @@
         fileReader.onload = function() {
           cleanupResizer();
 
-          currentResizer = new Resizer(fileReader.result);
+          currentResizer = new Resizer(fileReader.result, formInputResizeX, formInputResizeY, formInputResizeSize);
           currentResizer.setElement(resizeForm);
           uploadMessage.classList.add('invisible');
 

@@ -5,7 +5,7 @@
    * @constructor
    * @param {FileBuffer}
    */
-  var Resizer = function(image) {
+  var Resizer = function(image, formInputResizeX, formInputResizeY, formInputResizeSize) {
     // Изображение, с которым будет вестись работа.
     this._image = new Image();
     this._image.src = image;
@@ -39,6 +39,11 @@
           this._container.width / 2 - side / 2,
           this._container.height / 2 - side / 2,
           side);
+
+      // Задаем начальные значения полям Слева, Сверху и Сторона.
+      formInputResizeX.value = this._container.width / 2 - side / 2;
+      formInputResizeY.value = this._container.height / 2 - side / 2;
+      formInputResizeSize.value = side;
 
       // Отрисовка изначального состояния канваса.
       this.redraw();
