@@ -86,7 +86,6 @@
    * @return {boolean}
    */
   function resizeFormIsValid() {
-
     return (resizeFormInputXIsValid() && resizeFormInputYIsValid() && resizeFormInputSizeIsValid());
   }
 
