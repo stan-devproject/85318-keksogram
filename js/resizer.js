@@ -87,15 +87,54 @@
       // canvas'a поэтому важно вовремя поменять их, если нужно начать отрисовку
       // чего-либо с другой обводкой.
 
-      // Толщина линии.
-      this._ctx.lineWidth = 6;
-      // Цвет обводки.
-      this._ctx.strokeStyle = '#ffe753';
-      // Размер штрихов. Первый элемент массива задает длину штриха, второй
-      // расстояние между соседними штрихами.
-      this._ctx.setLineDash([15, 10]);
-      // Смещение первого штриха от начала линии.
-      this._ctx.lineDashOffset = 7;
+      // Выберите тип линии-обводки.
+      // default - стандартные крупные штрихи
+      // dotted - желтые точки
+      var RECT_BORDER_STYLE = 'dotted';
+
+      // На сколько пикселей вверх над обрезающей рамкой рисовать текст с его размерами
+      var LINE_OUTPUT_Y_OFFSET = 10;
+
+      // Шрифт текста с размерами обрезающей рамки
+      var LINE_OUTPUT_FONT = '16px serif';
+
+      // Цвет текста с размерами обрезающей рамки
+      var LINE_OUTPUT_COLOR = '#fff';
+
+      // Отступ от границы изображения до затемняющей рамки.
+      // Значение по умолчанию, меняется ниже в зависимости от режима отрисовки рамки.
+      var lineWidthMoiety = 6;
+
+      if (RECT_BORDER_STYLE === 'default') {
+        // Толщина линии.
+        this._ctx.lineWidth = 6;
+        // Цвет обводки.
+        this._ctx.strokeStyle = '#ffe753';
+        // Размер штрихов. Первый элемент массива задает длину штриха, второй
+        // расстояние между соседними штрихами.
+        this._ctx.setLineDash([15, 10]);
+        // Смещение первого штриха от начала линии.
+        this._ctx.lineDashOffset = 7;
+        // Отступ для обрезающей рамки.
+        // В данном случае берется, как половина толщины линии обводки.
+        lineWidthMoiety = this._ctx.lineWidth / 2;
+
+      } else if (RECT_BORDER_STYLE === 'dotted') {
+        // Убираем линию обводки.
+        this._ctx.lineWidth = 0;
+        // Цвет обводки.
+        this._ctx.strokeStyle = 'transparent';
+        // Отступ от обрезающей рамки.
+        lineWidthMoiety = 3;
+        // Цвет точек.
+        var RECT_BORDER_DOT_COLOR = 'yellow';
+        // Радиус точек.
+        var RECT_BORDER_DOT_RADIUS = 2;
+        // Отступ между точками.
+        var RECT_BORDER_DOT_OFFSET = 3;
+        // Стартовый отступ.
+        var RECT_BORDER_DOT_START_OFFSET = 0;
+      }
 
       // Сохранение состояния канваса.
       // Подробней см. строку 132.
@@ -104,20 +143,126 @@
       // Установка начальной точки системы координат в центр холста.
       this._ctx.translate(this._container.width / 2, this._container.height / 2);
 
+      // Далее координаты задаются от центра холста.
+
+      // Подсчитываем начальную левую-верхнюю точку канваса
+      // Не использую displX, displY, так как они возвращают позицию изображения,
+      // а в будущем его может быть потребуется сместить.
+      var canvasX = -(this._container.width / 2);
+      var canvasY = -(this._container.height / 2);
+
+      // И правую-нижнюю точку канваса.
+      var canvasMaxX = (this._container.width / 2);
+      var canvasMaxY = (this._container.width / 2);
+
+      // Координаты (левая верхняя точка) изображения.
       var displX = -(this._resizeConstraint.x + this._resizeConstraint.side / 2);
       var displY = -(this._resizeConstraint.y + this._resizeConstraint.side / 2);
-      // Отрисовка изображения на холсте. Параметры задают изображение, которое
+
+      // Отрисовка изображения на холсте.
+      // Параметры задают изображение, которое
       // нужно отрисовать и координаты его верхнего левого угла.
-      // Координаты задаются от центра холста.
       this._ctx.drawImage(this._image, displX, displY);
+
+      // Координаты прямоугольника, обозначающего область изображения после
+      // кадрирования.
+      var rectX = (-this._resizeConstraint.side / 2) - lineWidthMoiety;
+      var rectY = (-this._resizeConstraint.side / 2) - lineWidthMoiety;
+
+      // Координаты крайней правой нижней точки обрезающей области.
+      var rectMaxX = rectX + this._resizeConstraint.side;
+      var rectMaxY = rectY + this._resizeConstraint.side;
+
+      // Ширина и высота прямоугольника, обозначающего область изображения после кадрирования.
+      var rectWidth = this._resizeConstraint.side - lineWidthMoiety;
+      var rectHeight = this._resizeConstraint.side - lineWidthMoiety;
+
+      // Отрисовка обводки желтыми точками, если требуется.
+      // Иначе рисуется обводка по умолчанию.
+      if (RECT_BORDER_STYLE === 'dotted') {
+        this._ctx.beginPath();
+
+        this._ctx.fillStyle = RECT_BORDER_DOT_COLOR;
+
+        this._ctx.moveTo(rectX, rectY);
+
+        for (var i = rectX + RECT_BORDER_DOT_START_OFFSET; (i + 2 * RECT_BORDER_DOT_RADIUS) <= rectMaxX; i += 2 * RECT_BORDER_DOT_RADIUS + RECT_BORDER_DOT_OFFSET) {
+          this._ctx.arc(i, rectY, RECT_BORDER_DOT_RADIUS, 0, 2 * Math.PI);
+        }
+
+        this._ctx.fill();
+        this._ctx.beginPath();
+
+        for (i = rectY + RECT_BORDER_DOT_START_OFFSET; (i + 2 * RECT_BORDER_DOT_RADIUS) <= rectMaxY; i += 2 * RECT_BORDER_DOT_RADIUS + RECT_BORDER_DOT_OFFSET) {
+          this._ctx.arc(rectMaxX - lineWidthMoiety, i, RECT_BORDER_DOT_RADIUS, 0, 2 * Math.PI);
+        }
+
+        this._ctx.fill();
+        this._ctx.beginPath();
+
+        for (i = rectMaxX - lineWidthMoiety - RECT_BORDER_DOT_START_OFFSET; (i - 2 * RECT_BORDER_DOT_RADIUS) >= rectX; i -= 2 * RECT_BORDER_DOT_RADIUS + RECT_BORDER_DOT_OFFSET) {
+          this._ctx.arc(i, rectMaxY - lineWidthMoiety, RECT_BORDER_DOT_RADIUS, 0, 2 * Math.PI);
+        }
+
+        this._ctx.fill();
+        this._ctx.beginPath();
+
+        for (i = rectMaxY - lineWidthMoiety - RECT_BORDER_DOT_START_OFFSET; (i - 2 * RECT_BORDER_DOT_RADIUS) >= rectY; i -= 2 * RECT_BORDER_DOT_RADIUS + RECT_BORDER_DOT_OFFSET) {
+          this._ctx.arc(rectX, i, RECT_BORDER_DOT_RADIUS, 0, 2 * Math.PI);
+        }
+
+        this._ctx.fill();
+      }
 
       // Отрисовка прямоугольника, обозначающего область изображения после
       // кадрирования. Координаты задаются от центра.
-      this._ctx.strokeRect(
-          (-this._resizeConstraint.side / 2) - this._ctx.lineWidth / 2,
-          (-this._resizeConstraint.side / 2) - this._ctx.lineWidth / 2,
-          this._resizeConstraint.side - this._ctx.lineWidth / 2,
-          this._resizeConstraint.side - this._ctx.lineWidth / 2);
+      this._ctx.strokeRect(rectX, rectY, rectWidth, rectHeight);
+
+      // Задаем параметры затемнения областей, которые потом не попадут в итоговое изображение.
+      this._ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+
+      // Добавляем прямоугольники для затемнения части изображения, которое не обрезается.
+      // Верхний прямоугольник.
+      this._ctx.fillRect(
+        canvasX,
+        canvasY,
+        this._container.width,
+        (rectY - lineWidthMoiety - canvasY)
+      );
+
+      // Левый прямоугольник (высота как и у обрезающей рамки)
+      this._ctx.fillRect(
+        canvasX,
+        (rectY - lineWidthMoiety),
+        (rectY - lineWidthMoiety - canvasY),
+        (this._resizeConstraint.side + lineWidthMoiety)
+      );
+
+      // Правый прямоугольник (высота как и у обрезающей рамки)
+      this._ctx.fillRect(
+        rectMaxX,
+        (rectY - lineWidthMoiety),
+        (canvasMaxX - rectMaxX + lineWidthMoiety),
+        (this._resizeConstraint.side + lineWidthMoiety)
+      );
+
+      // Нижний прямоугольник
+      this._ctx.fillRect(
+        canvasX,
+        rectMaxY,
+        this._container.width,
+        (canvasMaxY - rectMaxY + lineWidthMoiety)
+      );
+
+
+      // Добавление текстовой строчки с размерами кадрируемого изображения.
+      var lineSizeOutput = this._image.naturalWidth + ' x ' + this._image.naturalHeight;
+      var lineSizeOutputX = rectX + (this._resizeConstraint.side / 2) - (this._ctx.measureText(lineSizeOutput).width / 2);
+      var lineSizeOutputY = rectY - LINE_OUTPUT_Y_OFFSET;
+
+      this._ctx.font = LINE_OUTPUT_FONT;
+      this._ctx.fillStyle = LINE_OUTPUT_COLOR;
+      this._ctx.fillText(lineSizeOutput, lineSizeOutputX, lineSizeOutputY);
 
       // Восстановление состояния канваса, которое было до вызова ctx.save
       // и последующего изменения системы координат. Нужно для того, чтобы
