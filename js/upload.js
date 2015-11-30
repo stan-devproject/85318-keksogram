@@ -33,13 +33,33 @@
   /**
    * @type {Object.<string, string>}
    */
-  var filterMap;
+  var filterMap = {
+    'none': 'filter-none',
+    'chrome': 'filter-chrome',
+    'sepia': 'filter-sepia'
+  };
+
+  // Фильтр по умолчанию. Указывается ключ массива filterMap.
+  var FILTER_DEFAULT_KEYMAP = 'none';
 
   /**
    * Объект, который занимается кадрированием изображения.
    * @type {Resizer}
    */
   var currentResizer;
+
+
+  // Поле "Слева".
+  var formInputResizeX = document.getElementById('resize-x');
+
+  // Поле "Сверху".
+  var formInputResizeY = document.getElementById('resize-y');
+
+  // Поле "Сторона".
+  var formInputResizeSize = document.getElementById('resize-size');
+
+  // Кнопка-значек "Вперед".
+  var formControlButtonFwd = document.getElementById('resize-fwd');
 
   /**
    * Удаляет текущий объект {@link Resizer}, чтобы создать новый с другим
@@ -69,11 +89,149 @@
 
   /**
    * Проверяет, валидны ли данные, в форме кадрирования.
+   * То есть все проверки формы в одном месте.
    * @return {boolean}
    */
   function resizeFormIsValid() {
+    return (resizeFormInputXIsValid() && resizeFormInputYIsValid() && resizeFormInputSizeIsValid());
+  }
+
+  /**
+   * Проверка, валидно ли поле "Слева".
+   * @returns {boolean}
+   */
+  function resizeFormInputXIsValid() {
+    if (formInputResizeX.value === '') {
+      return false;
+    }
+
+    if (isNaN(Number(formInputResizeX.value))) {
+      return false;
+    }
+
+    if (!(/[0-9]+/.test(formInputResizeX.value))) {
+      return false;
+    }
+
+    if (Number(formInputResizeX.value) < 0) {
+      return false;
+    }
+
+    if ((Number(formInputResizeX.value) + Number(formInputResizeSize.value)) > currentResizer._image.naturalWidth) {
+      return false;
+    }
+
     return true;
   }
+
+  /**
+   * Проверка, валидно ли поле "Сверху".
+   * @returns {boolean}
+   */
+  function resizeFormInputYIsValid() {
+    if (formInputResizeY.value === '') {
+      return false;
+    }
+
+    if (isNaN(Number(formInputResizeY.value))) {
+      return false;
+    }
+
+    if (!(/[0-9]+/.test(formInputResizeY.value))) {
+      return false;
+    }
+
+    if (Number(formInputResizeY.value) < 0) {
+      return false;
+    }
+
+    if ((Number(formInputResizeY.value) + Number(formInputResizeSize.value)) > currentResizer._image.naturalHeight) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Проверка, валидно ли поле "Сторона".
+   * @returns {boolean}
+   */
+  function resizeFormInputSizeIsValid() {
+    if (formInputResizeSize === '') {
+      return false;
+    }
+
+    if (isNaN(Number(formInputResizeSize.value))) {
+      return false;
+    }
+
+    if (!(/[0-9]+/.test(formInputResizeSize.value))) {
+      return false;
+    }
+
+    if ((Number(formInputResizeSize.value) <= 0)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Отмечаем конкретный инпут, как ошибочный.
+   * Добавляем ему класс, который через CSS делает поле красным.
+   * @param formInput
+   */
+  function setErrorMessage(formInput) {
+    if (!formInput.classList.contains('js-input-error')) {
+      formInput.classList.add('js-input-error');
+    }
+  }
+
+  /**
+   * Возвращаем инпут в обычное состояние.
+   * Убираем у инпута класс, который через CSS делает поле красным.
+   * @param formInput
+   */
+  function removeErrorMessage(formInput) {
+    if (formInput.classList.contains('js-input-error')) {
+      formInput.classList.remove('js-input-error');
+    }
+  }
+
+  /**
+   * Проверка, валидно ли поле "Слева".
+   * @returns {boolean}
+   */
+  function checkResizeFormValidity() {
+    if (!resizeFormInputXIsValid()) {
+      setErrorMessage(formInputResizeX);
+    } else {
+      removeErrorMessage(formInputResizeX);
+    }
+
+    if (!resizeFormInputYIsValid()) {
+      setErrorMessage(formInputResizeY);
+    } else {
+      removeErrorMessage(formInputResizeY);
+    }
+
+    if (!resizeFormInputSizeIsValid()) {
+      setErrorMessage(formInputResizeSize);
+    } else {
+      removeErrorMessage(formInputResizeSize);
+    }
+
+    if (resizeFormIsValid()) {
+      formControlButtonFwd.disabled = '';
+    } else {
+      formControlButtonFwd.disabled = 'disabled';
+    }
+  }
+
+  // Устанавливаем обработчики для отслеживания валидности формы.
+  formInputResizeX.onchange = checkResizeFormValidity;
+  formInputResizeY.onchange = checkResizeFormValidity;
+  formInputResizeSize.onchange = checkResizeFormValidity;
 
   /**
    * Форма загрузки изображения.
@@ -152,7 +310,7 @@
         fileReader.onload = function() {
           cleanupResizer();
 
-          currentResizer = new Resizer(fileReader.result);
+          currentResizer = new Resizer(fileReader.result, formInputResizeX, formInputResizeY, formInputResizeSize);
           currentResizer.setElement(resizeForm);
           uploadMessage.classList.add('invisible');
 
@@ -187,6 +345,77 @@
   };
 
   /**
+   * Возвращает значение фильтра по умолчанию.
+   * Возвращаемая строка - это ключ в массиве filterMap.
+   * @returns {string}
+     */
+  function getDefaultFilter() {
+    var cookieFilter = docCookies.getItem('filterMapKey');
+
+    if (cookieFilter && filterMap[cookieFilter]) {
+      return cookieFilter;
+    }
+
+    // Иначе возвращается фильтр по умолчанию.
+    return FILTER_DEFAULT_KEYMAP;
+  }
+
+  /**
+   * Устанавливает текущий фильтр, включая переключение radio-input`ов.
+   */
+  function setFilter(filterMapKey) {
+    for (var i = 0; i < filterForm['upload-filter'].length; i++) {
+      if (filterForm['upload-filter'][i].value === filterMapKey) {
+        filterForm['upload-filter'][i].checked = 'checked';
+      } else {
+        filterForm['upload-filter'][i].checked = '';
+      }
+    }
+
+    // Класс перезаписывается, а не обновляется через classList потому что нужно
+    // убрать предыдущий примененный класс. Для этого нужно или запоминать его
+    // состояние или просто перезаписывать.
+    filterImage.className = 'filter-image-preview ' + filterMap[filterMapKey];
+
+    // Сохранение в cookies выбранного фильтра.
+    // Соответственно всегда будет устанавливаться последний выбранный тип.
+    docCookies.setItem('filterMapKey', filterMapKey, getCookieExpiredDate());
+  }
+
+  /**
+   * Возвращает дату, когда cookies перестают действовать.
+   * В соответствии с ТЗ это количество дней, прошедшее с ближайшего дня рождения.
+   */
+  function getCookieExpiredDate() {
+
+    // Дата последнего дня рождения.
+    var timeLastBirthday;
+
+    if (((new Date()).getMonth() <= 1) && (((new Date()).getDate() < 12))) {
+      // В текущем году день рождения еще не наступал.
+      // Значит считаем дни, прошедшие с прошлогоднего дня рождения.
+      timeLastBirthday = new Date(((new Date()).getFullYear() - 1), 1, 12);
+
+    } else {
+      // В текущем году уже наступил день рождения.
+      // Значит считаем дни, прошедшие с дня рождения в этом году.
+      timeLastBirthday = new Date((new Date()).getFullYear(), 1, 12);
+    }
+
+    // Разница в милисекундах между текущим временем и последним днем рождения.
+    var timeLeftFromLastBirthday = (new Date()).getTime() - timeLastBirthday.getTime();
+
+    // Переводим прошедшее время в дни и округляем.
+    // Было требование посчитать именно дни.
+    var daysLeftFromLastBirthday = Math.round(timeLeftFromLastBirthday / (24 * 60 * 60));
+
+    // Считаем срок действия cookie: текущее время + дни с последнего дня рождения, умноженные на секунды в сутках.
+    var timeCookieExpired = (new Date()).getTime() + (daysLeftFromLastBirthday * (24 * 60 * 60));
+
+    return (new Date()).setTime(timeCookieExpired);
+  }
+
+  /**
    * Обработка отправки формы кадрирования. Если форма валидна, экспортирует
    * кропнутое изображение в форму добавления фильтра и показывает ее.
    * @param {Event} evt
@@ -199,6 +428,10 @@
 
       resizeForm.classList.add('invisible');
       filterForm.classList.remove('invisible');
+
+      // Инициализируем фильтр.
+      // Либо по умолчанию 'оригинал', либо из cookies последний использовавшийся.
+      setFilter(getDefaultFilter());
     }
   };
 
@@ -233,25 +466,13 @@
    * выбранному значению в форме.
    */
   filterForm.onchange = function() {
-    if (!filterMap) {
-      // Ленивая инициализация. Объект не создается до тех пор, пока
-      // не понадобится прочитать его в первый раз, а после этого запоминается
-      // навсегда.
-      filterMap = {
-        'none': 'filter-none',
-        'chrome': 'filter-chrome',
-        'sepia': 'filter-sepia'
-      };
-    }
-
+    // Получаем текущее значение радиобаттона (т.е. имя фильтра, оно изменилось)
     var selectedFilter = [].filter.call(filterForm['upload-filter'], function(item) {
       return item.checked;
     })[0].value;
 
-    // Класс перезаписывается, а не обновляется через classList потому что нужно
-    // убрать предыдущий примененный класс. Для этого нужно или запоминать его
-    // состояние или просто перезаписывать.
-    filterImage.className = 'filter-image-preview ' + filterMap[selectedFilter];
+    // Изменяем фильтр на текущее значение радиобаттона. (т.е. только что выбранный)
+    setFilter(selectedFilter);
   };
 
   cleanupResizer();
