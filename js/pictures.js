@@ -18,7 +18,7 @@
     // Скрываем блок с фильтрами.
     picturesFiltersHide();
 
-    pictures.forEach(function(picture){
+    pictures.forEach(function(picture) {
       container.appendChild(getElementFromTemplate(picture));
     });
 
@@ -31,12 +31,13 @@
    */
   function getElementFromTemplate(data) {
     var template = document.querySelector('#picture-template');
+    var element;
 
     if ('content' in template) {
-      var element = template.content.children[0].cloneNode(true);
+      element = template.content.children[0].cloneNode(true);
     } else {
       // Мы имеем дело с IE.
-      var element = template.children[0].cloneNode(true);
+      element = template.children[0].cloneNode(true);
     }
 
     element.querySelector('.picture-comments').textContent = data.comments.toString();
@@ -53,14 +54,14 @@
       pictureImage.height = 182;
 
       element.replaceChild(pictureImage, element.querySelector('img'));
-    }
+    };
 
     // Обработчик ошибки при загрузке изображения.
     pictureImage.onerror = function() {
-      if (!element.classList.contains('picture-load-failure')){
+      if (!element.classList.contains('picture-load-failure')) {
         element.classList.add('picture-load-failure');
       }
-    }
+    };
 
     // Обработчик ошибки, если сервер не отвечает из-за таймаута.
     var imageLoadTimeout = setTimeout(function() {
@@ -68,7 +69,7 @@
       pictureImage.src = '';
 
       // Показываем ошибку.
-      if (!element.classList.contains('picture-load-failure')){
+      if (!element.classList.contains('picture-load-failure')) {
         element.classList.add('picture-load-failure');
       }
     }, LOAD_TIMEOUT);
