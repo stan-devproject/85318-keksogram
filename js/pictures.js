@@ -57,7 +57,7 @@
     // Устанавливаем обработчик изменения скролла для отрисовки новых страниц с изображениями.
     // Это оптимизация (тротлинг), чтобы слишком часто не вызывалась данная функция.
     var scrollTimeout;
-    window.addEventListener('scroll', function(evt) {
+    window.addEventListener('scroll', function() {
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(autoLoadPictures, THROTTLE_TIMEOUT);
     });
