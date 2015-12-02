@@ -61,6 +61,14 @@
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(autoLoadPictures, THROTTLE_TIMEOUT);
     });
+
+    // Обработчик, который следит за изменением размера страницы.
+    // Например, открыли на маленьком окне, а потом увеличили на весь рабочий стол.
+    var resizeTimeout;
+    window.addEventListener('resize', function() {
+      clearTimeout(resizeTimeout);
+      scrollTimeout = setTimeout(fillViewportWithPictures, THROTTLE_TIMEOUT);
+    });
   }
 
   /**
