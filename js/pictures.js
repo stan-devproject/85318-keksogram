@@ -9,10 +9,22 @@
   var container = document.querySelector('.pictures');
 
   // Массив, который будет хранить загруженный список картинок.
-  var loadedPicturesData;
+  var loadedPicturesData = [];
+
+  // Массив, который будет хранить отсортированный (выбранным фильтром) список картинок.
+  var filteredPicturesData = [];
+
+  // Текущая страница при выдаче списка фотографий.
+  var currentPage = 0;
+
+  // Количество изображений на одной странице.
+  var PAGE_SIZE = 12;
 
   // Таймаут ожидания загрузки, после которого загрузка считается несостоявшейся.
   var LOAD_TIMEOUT = 10000;
+
+  // Таймаут тротлинга для оптимизации нагрузки (используется в обработчике скролла)
+  var THROTTLE_TIMEOUT = 100;
 
   /**
    * Функция, запускающая инициализацию модуля списка фотографий.
@@ -21,21 +33,90 @@
     // Скрываем блок с фильтрами.
     picturesFiltersHide();
 
-    // Устанавливаем обработчик, который следит за переключениями фильтров списка фотографий.
-    filtersForm.onchange = function() {
-      // Получаем текущее значение радиобаттона (т.е. имя фильтра, оно изменилось)
-      var selectedFilter = [].filter.call(filtersForm['filter'], function(item) {
-        return item.checked;
-      })[0].value;
-
-      setActivePictureFilter(selectedFilter);
-    };
-
-    // Генерируем и отображаем картинки на основе шаблонов.
+    // Скачиваем список и отображаем изображения. (с использованием шаблона)
     getPicturesAndRender();
 
     // Показываем блок с фильтрами.
     picturesFiltersShow();
+
+    // Устанавливаем обработчик, который следит за переключениями фильтров списка фотографий.
+    filtersForm.addEventListener('change', function(evt) {
+      // Получаем цель, изменение которой вызвало событие.
+      var selectedFilter = evt.target;
+
+      // При условии, если эта цель - радиобаттон.
+      if (selectedFilter.classList.contains('filters-radio')) {
+        // Устанавливаем новый активный фильтр.
+        // Внутри функции отрендеривается с нуля первая страница с изображениями.
+        // И дальше страница заполняется другими изображениями (добавляются еще страницы), если еще есть место.
+        // и до тех пор, пока есть что показывать.
+        setActivePictureFilter(selectedFilter);
+      }
+    });
+
+    // Устанавливаем обработчик изменения скролла для отрисовки новых страниц с изображениями.
+    // Это оптимизация (тротлинг), чтобы слишком часто не вызывалась данная функция.
+    var scrollTimeout;
+    window.addEventListener('scroll', function(evt) {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(autoLoadPictures, THROTTLE_TIMEOUT);
+    });
+  }
+
+  /**
+   * Подгружает следующую страницу при вызове, если это целесообразно.
+   */
+  function autoLoadPictures() {
+    // Находим последнее изображение из отрендеренных.
+    var lastPicture = document.querySelector('.pictures .picture:last-child');
+
+    // Если последнее изображение нашлось.
+    if (lastPicture) {
+      // То получаем данные о его расположении.
+      var lastPictureDetails = lastPicture.getBoundingClientRect();
+
+      // Если виден во вьюпорте хотя бы верхний край последнего изображения.
+      if (lastPictureDetails.bottom - window.innerHeight <= lastPictureDetails.height) {
+        // И если еще есть неотрендеренные страницы.
+        if (currentPage < Math.ceil(filteredPicturesData.length / PAGE_SIZE)) {
+          // Добавляем еще одну страницу с изображениями в дополнение к текущим.
+          picturesRender(filteredPicturesData, ++currentPage, false);
+        }
+      }
+    }
+  }
+
+  /**
+   * Заполняет только видимую страницу изображениями (столько страниц, сколько нужно),
+   * до тех пор, пока есть что показывать.
+   */
+  function fillViewportWithPictures() {
+    // Находим последнее изображенее из отрендеренных.
+    var lastPicture = document.querySelector('.pictures .picture:last-child');
+
+    // Если последнее изображение нашлось.
+    if (lastPicture) {
+      // То получаем данные о его расположении.
+      var lastPictureDetails = lastPicture.getBoundingClientRect();
+
+      // Пока виден во вьюпорте хотя бы верхний край последнего изображения
+      // И пока есть еще неотрендеренные страницы.
+      while ((lastPictureDetails.bottom - window.innerHeight <= lastPictureDetails.height)
+      && (currentPage < Math.ceil(filteredPicturesData.length / PAGE_SIZE))) {
+        // Добавляем еще одну страницу с изображениями в дополнение к текущим.
+        picturesRender(filteredPicturesData, ++currentPage, false);
+
+        // Обновляем данные о расположении самого последнего изображения из отрендеренных,
+        // так как мы только что отрендерили еще дополнительные изображения,
+        // и последняя картинка теперь другая.
+
+        // Опять находим последнее изображение из отрендеренных.
+        lastPicture = document.querySelector('.pictures .picture:last-child');
+
+        // И снова получаем данные о его расположении.
+        lastPictureDetails = lastPicture.getBoundingClientRect();
+      }
+    }
   }
 
   /**
@@ -44,8 +125,8 @@
   function setActivePictureFilter(selectedFilter) {
     // Если загруженный массив с картинками скачан.
     if (loadedPicturesData) {
-      // Копирование массива.
-      var filteredPictures = loadedPicturesData.slice(0);
+      // Копирование отфильтрованного массива (в глобальную переменную).
+      filteredPicturesData = loadedPicturesData.slice(0);
 
       switch (selectedFilter) {
         case 'popular':
@@ -53,7 +134,7 @@
           // нам приходят данные с сервера.
           break;
         case 'new':
-          filteredPictures.sort(function(a, b) {
+          filteredPicturesData.sort(function(a, b) {
             var aDate = new Date(a.date);
             var bDate = new Date(b.date);
 
@@ -61,13 +142,21 @@
           });
           break;
         case 'discussed':
-          filteredPictures.sort(function(a, b) {
+          filteredPicturesData.sort(function(a, b) {
             return b.comments - a.comments;
           });
           break;
       }
 
-      picturesRender(filteredPictures);
+      // Обнуляем текущую страницу.
+      currentPage = 0;
+
+      // Заполняем первую страницу изображениями с нуля.
+      picturesRender(filteredPicturesData, currentPage, true);
+
+      // И дальше страница заполняется другими изображениями (добавляются еще страницы), если еще есть место.
+      // и до тех пор, пока есть что показывать.
+      fillViewportWithPictures();
     }
   }
 
@@ -85,9 +174,17 @@
     }
 
     xhr.onload = function(evt) {
-      var rawData = evt.target.response;
-      loadedPicturesData = JSON.parse(rawData);
-      picturesRender(loadedPicturesData);
+      loadedPicturesData = JSON.parse(evt.target.response);
+
+      // Сортировка по умолчанию такая же, как и во входных данных.
+      filteredPicturesData = loadedPicturesData.slice(0);
+
+      // Генерируем первую страницу с изображениями.
+      picturesRender(filteredPicturesData, 0, true);
+
+      // Заполняем страницу другими изображениями (еще добавляем страницы), если еще есть место.
+      // и до тех пор, пока есть что показывать.
+      fillViewportWithPictures();
     };
 
     // Функция-обработчик ошибки загрузки.
@@ -113,13 +210,19 @@
   /**
    * Функция, ответственная за рендеринг картинок на основе шаблонов.
    */
-  function picturesRender(pictures) {
-    // Очищаем содержимое контейнера.
-    container.innerHTML = '';
+  function picturesRender(pictures, pageNumber, replace) {
+    if (replace) {
+      // Очищаем содержимое контейнера.
+      container.innerHTML = '';
+    }
 
     var fragment = document.createDocumentFragment();
 
-    pictures.forEach(function(picture) {
+    var from = pageNumber * PAGE_SIZE;
+    var to = from + PAGE_SIZE;
+    var pagePictures = pictures.slice(from, to);
+
+    pagePictures.forEach(function(picture) {
       fragment.appendChild(getElementFromTemplate(picture));
     });
 
