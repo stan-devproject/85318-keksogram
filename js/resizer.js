@@ -401,6 +401,48 @@
     },
 
     /**
+     * @param {number} x
+     */
+    setConstraintX: function(x) {
+      if (typeof x !== 'undefined') {
+        this._resizeConstraint.x = x;
+      }
+
+      requestAnimationFrame(function() {
+        this.redraw();
+        window.dispatchEvent(new CustomEvent('resizerchange'));
+      }.bind(this));
+    },
+
+    /**
+     * @param {number} y
+     */
+    setConstraintY: function(y) {
+      if (typeof y !== 'undefined') {
+        this._resizeConstraint.y = y;
+      }
+
+      requestAnimationFrame(function() {
+        this.redraw();
+        window.dispatchEvent(new CustomEvent('resizerchange'));
+      }.bind(this));
+    },
+
+    /**
+     * @param {number} side
+     */
+    setConstraintSide: function(side) {
+      if (typeof side !== 'undefined') {
+        this._resizeConstraint.side = side;
+      }
+
+      requestAnimationFrame(function() {
+        this.redraw();
+        window.dispatchEvent(new CustomEvent('resizerchange'));
+      }.bind(this));
+    },
+
+    /**
      * Удаление. Убирает контейнер из родительского элемента, убирает
      * все обработчики событий и убирает ссылки.
      */

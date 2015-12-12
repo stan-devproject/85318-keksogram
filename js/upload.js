@@ -200,6 +200,7 @@
 
   /**
    * Проверка, валидно ли поле "Слева".
+   * Если валидно, то изменяем месторасположение обрезающей рамки.
    * @returns {boolean}
    */
   function checkResizeFormValidity() {
@@ -207,18 +208,24 @@
       setErrorMessage(formInputResizeX);
     } else {
       removeErrorMessage(formInputResizeX);
+
+      currentResizer.setConstraintX(Number(formInputResizeX.value));
     }
 
     if (!resizeFormInputYIsValid()) {
       setErrorMessage(formInputResizeY);
     } else {
       removeErrorMessage(formInputResizeY);
+
+      currentResizer.setConstraintY(Number(formInputResizeY.value));
     }
 
     if (!resizeFormInputSizeIsValid()) {
       setErrorMessage(formInputResizeSize);
     } else {
       removeErrorMessage(formInputResizeSize);
+
+      currentResizer.setConstraintSide(Number(formInputResizeSize.value));
     }
 
     if (resizeFormIsValid()) {
@@ -229,9 +236,9 @@
   }
 
   // Устанавливаем обработчики для отслеживания валидности формы.
-  formInputResizeX.onchange = checkResizeFormValidity;
-  formInputResizeY.onchange = checkResizeFormValidity;
-  formInputResizeSize.onchange = checkResizeFormValidity;
+  formInputResizeX.addEventListener('change', checkResizeFormValidity);
+  formInputResizeY.addEventListener('change', checkResizeFormValidity);
+  formInputResizeSize.addEventListener('change', checkResizeFormValidity);
 
   /**
    * Форма загрузки изображения.
@@ -297,7 +304,7 @@
    * и показывается форма кадрирования.
    * @param {Event} evt
    */
-  uploadForm.onchange = function(evt) {
+  uploadForm.addEventListener('change', function(evt) {
     var element = evt.target;
     if (element.id === 'upload-file') {
       // Проверка типа загружаемого файла, тип должен быть изображением
@@ -327,14 +334,14 @@
         showMessage(Action.ERROR);
       }
     }
-  };
+  });
 
   /**
    * Обработка сброса формы кадрирования. Возвращает в начальное состояние
    * и обновляет фон.
    * @param {Event} evt
    */
-  resizeForm.onreset = function(evt) {
+  resizeForm.addEventListener('reset', function(evt) {
     evt.preventDefault();
 
     cleanupResizer();
@@ -342,7 +349,7 @@
 
     resizeForm.classList.add('invisible');
     uploadForm.classList.remove('invisible');
-  };
+  });
 
   /**
    * Возвращает значение фильтра по умолчанию.
@@ -420,7 +427,7 @@
    * кропнутое изображение в форму добавления фильтра и показывает ее.
    * @param {Event} evt
    */
-  resizeForm.onsubmit = function(evt) {
+  resizeForm.addEventListener('submit', function(evt) {
     evt.preventDefault();
 
     if (resizeFormIsValid()) {
@@ -433,25 +440,25 @@
       // Либо по умолчанию 'оригинал', либо из cookies последний использовавшийся.
       setFilter(getDefaultFilter());
     }
-  };
+  });
 
   /**
    * Сброс формы фильтра. Показывает форму кадрирования.
    * @param {Event} evt
    */
-  filterForm.onreset = function(evt) {
+  filterForm.addEventListener('reset', function(evt) {
     evt.preventDefault();
 
     filterForm.classList.add('invisible');
     resizeForm.classList.remove('invisible');
-  };
+  });
 
   /**
    * Отправка формы фильтра. Возвращает в начальное состояние, предварительно
    * записав сохраненный фильтр в cookie.
    * @param {Event} evt
    */
-  filterForm.onsubmit = function(evt) {
+  filterForm.addEventListener('submit', function(evt) {
     evt.preventDefault();
 
     cleanupResizer();
@@ -459,13 +466,13 @@
 
     filterForm.classList.add('invisible');
     uploadForm.classList.remove('invisible');
-  };
+  });
 
   /**
    * Обработчик изменения фильтра. Добавляет класс из filterMap соответствующий
    * выбранному значению в форме.
    */
-  filterForm.onchange = function() {
+  filterForm.addEventListener('change', function() {
     // Получаем текущее значение радиобаттона (т.е. имя фильтра, оно изменилось)
     var selectedFilter = [].filter.call(filterForm['upload-filter'], function(item) {
       return item.checked;
@@ -473,7 +480,14 @@
 
     // Изменяем фильтр на текущее значение радиобаттона. (т.е. только что выбранный)
     setFilter(selectedFilter);
-  };
+  });
+
+  window.addEventListener('resizerchange', function() {
+    var currentConstraint = currentResizer.getConstraint();
+
+    formInputResizeSize.value = currentConstraint.side.toString();
+
+  });
 
   cleanupResizer();
   updateBackground();
