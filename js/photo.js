@@ -1,13 +1,17 @@
 'use strict';
 
 (function() {
-  // Таймаут ожидания загрузки, после которого загрузка считается несостоявшейся.
+  /**
+   * Таймаут ожидания загрузки, после которого загрузка считается несостоявшейся.
+   * @const
+   * @type {number}
+   */
   var LOAD_TIMEOUT = 10000;
 
   /**
    * @param {Object} data
    * @constructor
-     */
+   */
   function Photo(data) {
     this._data = data;
   }
@@ -29,6 +33,9 @@
     this.element.querySelector('.picture-comments').textContent = this._data.comments.toString();
     this.element.querySelector('.picture-likes').textContent = this._data.likes.toString();
 
+    /**
+     * @type {Image}
+     */
     var pictureImage = new Image();
 
     // Обработчик успешной загрузки изображения.

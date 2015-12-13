@@ -39,7 +39,11 @@
     'sepia': 'filter-sepia'
   };
 
-  // Фильтр по умолчанию. Указывается ключ массива filterMap.
+  /**
+   * Фильтр по умолчанию. Указывается ключ массива filterMap.
+   * @const
+   * @type {number}
+   */
   var FILTER_DEFAULT_KEYMAP = 'none';
 
   /**
@@ -48,17 +52,28 @@
    */
   var currentResizer;
 
-
-  // Поле "Слева".
+  /**
+   * Поле "Слева".
+   * @type {HTMLElement}
+   */
   var formInputResizeX = document.getElementById('resize-x');
 
-  // Поле "Сверху".
+  /**
+   * Поле "Сверху".
+   * @type {HTMLElement}
+   */
   var formInputResizeY = document.getElementById('resize-y');
 
-  // Поле "Сторона".
+  /**
+   * Поле "Сторона".
+   * @type {HTMLElement}
+   */
   var formInputResizeSize = document.getElementById('resize-size');
 
-  // Кнопка-значек "Вперед".
+  /**
+   * Кнопка-значек "Вперед".
+   * @type {HTMLElement}
+   */
   var formControlButtonFwd = document.getElementById('resize-fwd');
 
   /**
@@ -235,11 +250,6 @@
     }
   }
 
-  // Устанавливаем обработчики для отслеживания валидности формы.
-  formInputResizeX.addEventListener('change', checkResizeFormValidity);
-  formInputResizeY.addEventListener('change', checkResizeFormValidity);
-  formInputResizeSize.addEventListener('change', checkResizeFormValidity);
-
   /**
    * Форма загрузки изображения.
    * @type {HTMLFormElement}
@@ -369,6 +379,7 @@
 
   /**
    * Устанавливает текущий фильтр, включая переключение radio-input`ов.
+   * @param {filterMap} filterMapKey
    */
   function setFilter(filterMapKey) {
     for (var i = 0; i < filterForm['upload-filter'].length; i++) {
@@ -488,6 +499,11 @@
     formInputResizeSize.value = currentConstraint.side.toString();
 
   });
+
+  // Устанавливаем обработчики для отслеживания валидности формы.
+  formInputResizeX.addEventListener('change', checkResizeFormValidity);
+  formInputResizeY.addEventListener('change', checkResizeFormValidity);
+  formInputResizeSize.addEventListener('change', checkResizeFormValidity);
 
   cleanupResizer();
   updateBackground();

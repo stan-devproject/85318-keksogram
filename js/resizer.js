@@ -3,7 +3,10 @@
 (function() {
   /**
    * @constructor
-   * @param {FileBuffer}
+   * @param {FileBuffer} image
+   * @param {HTMLElement} formInputResizeX
+   * @param {HTMLElement} formInputResizeY
+   * @param {HTMLElement} formInputResizeSize
    */
   var Resizer = function(image, formInputResizeX, formInputResizeY, formInputResizeSize) {
     // Изображение, с которым будет вестись работа.
