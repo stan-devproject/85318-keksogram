@@ -26,6 +26,9 @@
   // Таймаут тротлинга для оптимизации нагрузки (используется в обработчике скролла)
   var THROTTLE_TIMEOUT = 100;
 
+  // Объект галлереи.
+  var gallery = new Gallery();
+
   /**
    * Функция, запускающая инициализацию модуля списка фотографий.
    */
@@ -223,7 +226,7 @@
       // Очищаем содержимое контейнера.
       var renderedElements = container.querySelectorAll('.picture');
       [].forEach.call(renderedElements, function(el) {
-        //el.removeEventListener('click', _onClick);
+        el.removeEventListener('click', _onClick);
         container.removeChild(el);
       });
     }
@@ -238,6 +241,9 @@
       var photoElement = new Photo(picture);
       photoElement.render();
       fragment.appendChild(photoElement.element);
+
+      // Показ галереи по клику на изображение.
+      photoElement.element.addEventListener('click', _onClick);
     });
 
     // Данные сгенерированы успешно, убираем прелоадер, если он есть.
@@ -246,6 +252,11 @@
     }
 
     container.appendChild(fragment);
+  }
+
+  function _onClick(evt) {
+    evt.preventDefault();
+    gallery.show();
   }
 
   /**

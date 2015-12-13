@@ -4,6 +4,7 @@ globals:
   Backbone: true
   docCookies: true
   Photo: true
+  Gallery: true
 
 env:
   browser: true

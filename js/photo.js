@@ -4,9 +4,6 @@
   // Таймаут ожидания загрузки, после которого загрузка считается несостоявшейся.
   var LOAD_TIMEOUT = 10000;
 
-  // Таймаут тротлинга для оптимизации нагрузки (используется в обработчике скролла)
-  var THROTTLE_TIMEOUT = 100;
-
   /**
    * @param {Object} data
    * @constructor
@@ -61,7 +58,7 @@
       if (!this.element.classList.contains('picture-load-failure')) {
         this.element.classList.add('picture-load-failure');
       }
-    }, LOAD_TIMEOUT);
+    }.bind(this), LOAD_TIMEOUT);
 
     // Запускаем загрузку изображения.
     pictureImage.src = this._data.url;
