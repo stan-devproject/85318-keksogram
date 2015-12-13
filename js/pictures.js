@@ -221,7 +221,11 @@
   function picturesRender(pictures, pageNumber, replace) {
     if (replace) {
       // Очищаем содержимое контейнера.
-      container.innerHTML = '';
+      var renderedElements = container.querySelectorAll('.picture');
+      [].forEach.call(renderedElements, function(el) {
+        //el.removeEventListener('click', _onClick);
+        container.removeChild(el);
+      });
     }
 
     var fragment = document.createDocumentFragment();
@@ -231,7 +235,9 @@
     var pagePictures = pictures.slice(from, to);
 
     pagePictures.forEach(function(picture) {
-      fragment.appendChild(getElementFromTemplate(picture));
+      var photoElement = new Photo(picture);
+      photoElement.render();
+      fragment.appendChild(photoElement.element);
     });
 
     // Данные сгенерированы успешно, убираем прелоадер, если он есть.
@@ -240,60 +246,6 @@
     }
 
     container.appendChild(fragment);
-  }
-
-  /**
-   * Для каждого элемента создаем DOM-элемент на основе шаблона.
-   */
-  function getElementFromTemplate(data) {
-    var template = document.querySelector('#picture-template');
-    var element;
-
-    if ('content' in template) {
-      element = template.content.children[0].cloneNode(true);
-    } else {
-      // Мы имеем дело с IE.
-      element = template.children[0].cloneNode(true);
-    }
-
-    element.querySelector('.picture-comments').textContent = data.comments.toString();
-    element.querySelector('.picture-likes').textContent = data.likes.toString();
-
-    var pictureImage = new Image();
-
-    // Обработчик успешной загрузки изображения.
-    pictureImage.onload = function() {
-      // Отменяем таймаут, так как изображение успешно загрузилось.
-      clearTimeout(imageLoadTimeout);
-
-      pictureImage.width = 182;
-      pictureImage.height = 182;
-
-      element.replaceChild(pictureImage, element.querySelector('img'));
-    };
-
-    // Обработчик ошибки при загрузке изображения.
-    pictureImage.onerror = function() {
-      if (!element.classList.contains('picture-load-failure')) {
-        element.classList.add('picture-load-failure');
-      }
-    };
-
-    // Обработчик ошибки, если сервер не отвечает из-за таймаута.
-    var imageLoadTimeout = setTimeout(function() {
-      // Прекращаем загрузку
-      pictureImage.src = '';
-
-      // Показываем ошибку.
-      if (!element.classList.contains('picture-load-failure')) {
-        element.classList.add('picture-load-failure');
-      }
-    }, LOAD_TIMEOUT);
-
-    // Запускаем загрузку изображения.
-    pictureImage.src = data.url;
-
-    return element;
   }
 
   /**

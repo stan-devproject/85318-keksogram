@@ -3,6 +3,7 @@ root: true
 globals:
   Backbone: true
   docCookies: true
+  Photo: true
 
 env:
   browser: true
