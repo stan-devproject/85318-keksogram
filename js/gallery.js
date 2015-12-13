@@ -67,7 +67,7 @@
    * @private
    */
   Gallery.prototype._onDocumentKeyDown = function(evt) {
-    if (evt.keyCode == 27) {
+    if (evt.keyCode === 27) {
       this.hide();
     }
   };
