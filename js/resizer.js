@@ -337,9 +337,9 @@
       // Чтобы провести валидацию получившихся новых значений координат.
       var eventOnChange = document.createEvent("Event");
       eventOnChange.initEvent("change", false, true);
-      document.getElementById('resize-x').dispatchEvent(eventOnChange);
-      document.getElementById('resize-y').dispatchEvent(eventOnChange);
-      document.getElementById('resize-side').dispatchEvent(eventOnChange);
+      document.getElementById("resize-x").dispatchEvent(eventOnChange);
+      document.getElementById("resize-y").dispatchEvent(eventOnChange);
+      document.getElementById("resize-side").dispatchEvent(eventOnChange);
     },
 
     /**

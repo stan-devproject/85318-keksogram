@@ -9,7 +9,7 @@
    * @param {function} Child
    * @param {function} Parent
    */
-  var inherit = function (Child, Parent) {
+  var inherit = function(Child, Parent) {
     var EmptyConstructor = function() {};
     EmptyConstructor.prototype = Parent.prototype;
     Child.prototype = new EmptyConstructor();
