@@ -61,7 +61,7 @@
   Resizer.prototype = {
     /**
      * Родительский элемент канваса.
-     * @type {Element}
+     * @type {?Element}
      * @private
      */
     _element: null,
@@ -70,7 +70,7 @@
      * Положение курсора в момент перетаскивания. От положения курсора
      * рассчитывается смещение на которое нужно переместить изображение
      * за каждую итерацию перетаскивания.
-     * @type {Coordinate}
+     * @type {?Coordinate)
      * @private
      */
     _cursorPosition: null,
@@ -78,7 +78,7 @@
     /**
      * Объект, хранящий итоговое кадрирование: сторона квадрата и смещение
      * от верхнего левого угла исходного изображения.
-     * @type {Square}
+     * @type {?Square}
      * @private
      */
     _resizeConstraint: null,
@@ -332,6 +332,14 @@
      */
     _onDragEnd: function() {
       this._exitDragMode();
+
+      // По окончанию перетаскивания вызываем обработчик Change у полей формы
+      // Чтобы провести валидацию получившихся новых значений координат.
+      var eventOnChange = document.createEvent("Event");
+      eventOnChange.initEvent("change", false, true);
+      document.getElementById('resize-x').dispatchEvent(eventOnChange);
+      document.getElementById('resize-y').dispatchEvent(eventOnChange);
+      document.getElementById('resize-side').dispatchEvent(eventOnChange);
     },
 
     /**
@@ -380,9 +388,9 @@
     },
 
     /**
-     * @param {number} x
-     * @param {number} y
-     * @param {number} side
+     * @param {number=} x
+     * @param {number=} y
+     * @param {number=} side
      */
     setConstraint: function(x, y, side) {
       if (typeof x !== 'undefined') {
@@ -397,6 +405,10 @@
         this._resizeConstraint.side = side;
       }
 
+      document.getElementById('resize-x').value = this._resizeConstraint.x.toString();
+      document.getElementById('resize-y').value = this._resizeConstraint.y.toString();
+      document.getElementById('resize-size').value = this._resizeConstraint.side.toString();
+
       requestAnimationFrame(function() {
         this.redraw();
         window.dispatchEvent(new CustomEvent('resizerchange'));
@@ -404,7 +416,7 @@
     },
 
     /**
-     * @param {number} x
+     * @param {number=} x
      */
     setConstraintX: function(x) {
       if (typeof x !== 'undefined') {
@@ -418,7 +430,7 @@
     },
 
     /**
-     * @param {number} y
+     * @param {number=} y
      */
     setConstraintY: function(y) {
       if (typeof y !== 'undefined') {
@@ -432,7 +444,7 @@
     },
 
     /**
-     * @param {number} side
+     * @param {number=} side
      */
     setConstraintSide: function(side) {
       if (typeof side !== 'undefined') {

@@ -15,60 +15,109 @@
     this._onDocumentKeyDown = this._onDocumentKeyDown.bind(this);
   };
 
-  /**
-   * Показ галереи.
-   */
-  Gallery.prototype.show = function() {
-    this.element.classList.remove('invisible');
+  Gallery.prototype = {
+    /**
+     * Массив фотографий из JSON.
+     * @type {Array} _pictures
+     */
+    _pictures: [],
 
-    // Добавляем обработчик клика по крестику для закрытия галереи.
-    this._closeButton.addEventListener('click', this._onCloseClick);
+    /**
+     * Хранит номер текущей фотографии, загруженной в галерею.
+     * @type {?Number} _currentPictureNumber
+     */
+    _currentPictureNumber: null,
 
-    // Добавляем обработчик клика мышкой на фотографию в галереи.
-    this._photoImage.addEventListener('click', this._onPhotoClick);
+    /**
+     * Показ галереи.
+     */
+    show: function() {
+      this.element.classList.remove('invisible');
 
-    // Добавляем обработчик нажатия на клавишу. Ловим Esc.
-    window.addEventListener('keydown', this._onDocumentKeyDown);
-  };
+      // Добавляем обработчик клика по крестику для закрытия галереи.
+      this._closeButton.addEventListener('click', this._onCloseClick);
 
-  /**
-   * Скрытие галереи.
-   */
-  Gallery.prototype.hide = function() {
-    this.element.classList.add('invisible');
+      // Добавляем обработчик клика мышкой на фотографию в галереи.
+      this._photoImage.addEventListener('click', this._onPhotoClick);
 
-    // Удаляем обработчик клика по крестику для закрытия галереи.
-    // Специально, чтобы он не висел в памяти, когда не нужен.
-    this._closeButton.removeEventListener('click', this._onCloseClick);
+      // Добавляем обработчик нажатия на клавишу. Ловим Esc.
+      window.addEventListener('keydown', this._onDocumentKeyDown);
+    },
 
-    // Удаляем обработчик клика мышкой на фотографию в галереи.
-    this._photoImage.removeEventListener('click', this._onPhotoClick);
+    /**
+     * Скрытие галереи.
+     */
+    hide: function() {
+      this.element.classList.add('invisible');
 
-    // Удаляем обработчик нажатия на клавишу. Ловим Esc.
-    window.removeEventListener('keydown', this._onDocumentKeyDown);
-  };
+      // Удаляем обработчик клика по крестику для закрытия галереи.
+      // Специально, чтобы он не висел в памяти, когда не нужен.
+      this._closeButton.removeEventListener('click', this._onCloseClick);
 
-  /**
-   * Обработчики события клика по крестику для скрытия галереи.
-   * @private
-   */
-  Gallery.prototype._onCloseClick = function() {
-    this.hide();
-  };
+      // Удаляем обработчик клика мышкой на фотографию в галереи.
+      this._photoImage.removeEventListener('click', this._onPhotoClick);
 
-  /**
-   * Обработчики события клика по фотографии.
-   * @private
-   */
-  Gallery.prototype._onPhotoClick = function() {};
+      // Удаляем обработчик нажатия на клавишу. Ловим Esc.
+      window.removeEventListener('keydown', this._onDocumentKeyDown);
+    },
 
-  /**
-   * Вызываем закрытие галереи по нажатию Esc.
-   * @private
-   */
-  Gallery.prototype._onDocumentKeyDown = function(evt) {
-    if (evt.keyCode === 27) {
+    /**
+     * Принимает на вход массив фотографий из json и сохраняет его в объекте.
+     *
+     * @param {Array.<Object>} data
+     */
+    setPictures: function(data) {
+      this._pictures = data;
+    },
+
+    /**
+     * Берет фотографию с переданным индексом из массива фотографий и
+     * показывает ее в галерее, обновляя DOM-элемент .gallery-overlay:
+     * меняет src у фотографии .gallery-overlay-image и выставляет
+     * правильные количества лайков и комментариев в элементы
+     * .gallery-overlay-controls-like и .gallery-overlay-controls-comments.
+     *
+     * @param {number} i
+     */
+    setCurrentPicture: function(i) {
+      if (this._currentPictureNumber === i) {
+        return;
+      }
+
+      this._currentPictureNumber = i;
+
+      document.querySelector('.gallery-overlay-image').src = this._pictures[i].url;
+      document.querySelector('.gallery-overlay-controls .likes-count').innerHTML = this._pictures[i].likes;
+      document.querySelector('.gallery-overlay-controls .comments-count').innerHTML = this._pictures[i].comments;
+    },
+
+    /**
+     * Обработчики события клика по крестику для скрытия галереи.
+     * @private
+     */
+    _onCloseClick: function() {
       this.hide();
+    },
+
+    /**
+     * Обработчики события клика по фотографии.
+     * @private
+     */
+    _onPhotoClick: function() {
+      console.log('dd = ' + this._currentPictureNumber);
+      if (this._pictures[this._currentPictureNumber + 1]) {
+        this.setCurrentPicture(this._currentPictureNumber + 1);
+      }
+    },
+
+    /**
+     * Вызываем закрытие галереи по нажатию Esc.
+     * @private
+     */
+    _onDocumentKeyDown: function(evt) {
+      if (evt.keyCode === 27) {
+        this.hide();
+      }
     }
   };
 

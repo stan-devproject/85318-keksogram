@@ -14,6 +14,8 @@
    */
   function Photo(data) {
     this._data = data;
+
+    this._onClick = this._onClick.bind(this);
   }
 
   /**
@@ -69,6 +71,27 @@
 
     // Запускаем загрузку изображения.
     pictureImage.src = this._data.url;
+
+    // Устанавливаем обработчик события клика по фотографии,
+    // чтобы он открывался в галерее.
+    this.element.addEventListener('click', this._onClick);
+  };
+
+  /**
+   * Переопределяемый коллбек, который вызывается при клике на загруженную фотографию.
+   * @type {?function}
+   */
+  Photo.prototype.onClick = null;
+
+  /**
+   * Внутренний обработчик клика по фотографии, который затем вызывает коллбек.
+   * @type {function}
+   */
+  Photo.prototype._onClick = function(evt) {
+    evt.preventDefault();
+    if (!this.element.classList.contains('picture-load-failure')) {
+      this.onClick();
+    }
   };
 
   window.Photo = Photo;

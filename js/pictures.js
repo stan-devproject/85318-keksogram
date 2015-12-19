@@ -16,13 +16,13 @@
 
   /**
    * Массив, который будет хранить загруженный список картинок.
-   * @type {object}
+   * @type {Array}
    */
   var loadedPicturesData = [];
 
   /**
    * Массив, который будет хранить отсортированный (выбранным фильтром) список картинок.
-   * @type {object}
+   * @type {Array}
    */
   var filteredPicturesData = [];
 
@@ -73,16 +73,13 @@
 
     // Устанавливаем обработчик, который следит за переключениями фильтров списка фотографий.
     filtersForm.addEventListener('change', function(evt) {
-      // Получаем цель, изменение которой вызвало событие.
-      var selectedFilter = evt.target;
-
       // При условии, если эта цель - радиобаттон.
-      if (selectedFilter.classList.contains('filters-radio')) {
+      if (evt.target.classList.contains('filters-radio')) {
         // Устанавливаем новый активный фильтр.
         // Внутри функции отрендеривается с нуля первая страница с изображениями.
         // И дальше страница заполняется другими изображениями (добавляются еще страницы), если еще есть место.
         // и до тех пор, пока есть что показывать.
-        setActivePictureFilter(selectedFilter);
+        setActivePictureFilter(evt.target.value);
       }
     });
 
@@ -192,6 +189,9 @@
       // Обнуляем текущую страницу.
       currentPage = 0;
 
+      // Обновляем данные в объекте Галереи
+      gallery.setPictures(filteredPicturesData);
+
       // Заполняем первую страницу изображениями с нуля.
       picturesRender(filteredPicturesData, currentPage, true);
 
@@ -216,6 +216,9 @@
 
     xhr.onload = function(evt) {
       loadedPicturesData = JSON.parse(evt.target.response);
+
+      // Сохраняем данные в объекте Галереи
+      gallery.setPictures(loadedPicturesData);
 
       // Сортировка по умолчанию такая же, как и во входных данных.
       filteredPicturesData = loadedPicturesData.slice(0);
@@ -259,7 +262,7 @@
       // Очищаем содержимое контейнера.
       var renderedElements = container.querySelectorAll('.picture');
       [].forEach.call(renderedElements, function(el) {
-        el.removeEventListener('click', _onClick);
+        //el.removeEventListener('click', _onClick);
         container.removeChild(el);
       });
     }
@@ -270,13 +273,17 @@
     var to = from + PAGE_SIZE;
     var pagePictures = pictures.slice(from, to);
 
-    pagePictures.forEach(function(picture) {
+    pagePictures.forEach(function(picture, index) {
       var photoElement = new Photo(picture);
       photoElement.render();
       fragment.appendChild(photoElement.element);
 
       // Показ галереи по клику на изображение.
-      photoElement.element.addEventListener('click', _onClick);
+      photoElement.onClick = function() {
+        gallery.setCurrentPicture(from + index);
+        gallery.show();
+      };
+
     });
 
     // Данные сгенерированы успешно, убираем прелоадер, если он есть.
@@ -285,11 +292,6 @@
     }
 
     container.appendChild(fragment);
-  }
-
-  function _onClick(evt) {
-    evt.preventDefault();
-    gallery.show();
   }
 
   /**
