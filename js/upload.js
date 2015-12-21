@@ -365,7 +365,7 @@
    * Возвращает значение фильтра по умолчанию.
    * Возвращаемая строка - это ключ в массиве filterMap.
    * @returns {string}
-     */
+   */
   function getDefaultFilter() {
     var cookieFilter = docCookies.getItem('filterMapKey');
 

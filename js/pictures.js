@@ -59,6 +59,28 @@
   var gallery = new Gallery();
 
   /**
+   * Форма выбора фильтра списка фотографий.
+   * @type {HTMLFormElement}
+   */
+  var filterPicturesForm = document.forms['main-pictures-filter'];
+
+  /**
+   * @type {Object.<string, string>}
+   */
+  var filterPicturesMap = {
+    'popular': 'filter-popular',
+    'new': 'filter-new',
+    'discussed': 'filter-discussed'
+  };
+
+  /**
+   * Фильтр по умолчанию. Указывается ключ массива filterMap.
+   * @const
+   * @type {number}
+   */
+  var FILTER_PICTURES_DEFAULT = 'popular';
+
+  /**
    * Функция, запускающая инициализацию модуля списка фотографий.
    */
   function picturesInitialize() {
@@ -98,6 +120,43 @@
       clearTimeout(resizeTimeout);
       scrollTimeout = setTimeout(fillViewportWithPictures, THROTTLE_TIMEOUT);
     });
+  }
+
+  /**
+   * Возвращает значение фильтра картинок.
+   * Либо последнее сохраненное пользователем, либо значение по умолчанию.
+   */
+  function getDefaultPicturesFilter() {
+    var storageActiveFilter = localStorage.getItem('activePictureFilter');
+
+    if (storageActiveFilter && filterPicturesMap[storageActiveFilter]) {
+      return storageActiveFilter;
+    }
+
+    // Иначе возвращается фильтр по умолчанию.
+    return FILTER_PICTURES_DEFAULT;
+  }
+
+  /**
+   * Сохраняем текущее значение фильтра списка фотографий в localStorage.
+   * @param {string} selectedFilter
+   */
+  function savePicturesFilterInStorage(selectedFilter) {
+    localStorage.setItem('activePictureFilter', selectedFilter);
+  }
+
+  /**
+   * Переключение radio-input`ов текущего фильтра списка фотографий.
+   * @param {string} filter
+   */
+  function setPicturesFilter(filter) {
+    for (var i = 0; i < filterPicturesForm['filter'].length; i++) {
+      if (filterPicturesForm['filter'][i].value === filter) {
+        filterPicturesForm['filter'][i].checked = 'checked';
+      } else {
+        filterPicturesForm['filter'][i].checked = '';
+      }
+    }
   }
 
   /**
@@ -186,6 +245,9 @@
           break;
       }
 
+      // Сохраняем текущее значение фильтра в localStorage.
+      savePicturesFilterInStorage(selectedFilter);
+
       // Обнуляем текущую страницу.
       currentPage = 0;
 
@@ -217,11 +279,17 @@
     xhr.onload = function(evt) {
       loadedPicturesData = JSON.parse(evt.target.response);
 
-      // Сохраняем данные в объекте Галереи
-      gallery.setPictures(loadedPicturesData);
+      var defaultFilter = getDefaultPicturesFilter();
 
-      // Сортировка по умолчанию такая же, как и во входных данных.
-      filteredPicturesData = loadedPicturesData.slice(0);
+      // Устанавливаем в блоке с фильтрами последнее сохраненное значение или по умолчанию.
+      setPicturesFilter(defaultFilter);
+
+      // Запускаем фильтрацию.
+      setActivePictureFilter(defaultFilter);
+
+      // Сохраняем данные в объекте Галереи
+      // filteredPicturesData появилась, так как мы только что запустили фильтрацию.
+      gallery.setPictures(filteredPicturesData);
 
       // Генерируем первую страницу с изображениями.
       picturesRender(filteredPicturesData, 0, true);
