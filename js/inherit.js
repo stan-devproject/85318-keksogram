@@ -1,6 +1,10 @@
 'use strict';
 
-(function() {
+requirejs.config({
+  baseUrl: 'js'
+});
+
+define(function() {
   /**
    * Функция принимает два конструктора и записывает в прототип
    * дочернего конструктора child методы и свойства родительского
@@ -15,5 +19,5 @@
     Child.prototype = new EmptyConstructor();
   };
 
-  window.inherit = inherit;
-})();
+  return inherit;
+});

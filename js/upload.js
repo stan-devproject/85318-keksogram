@@ -7,7 +7,13 @@
 
 'use strict';
 
-(function() {
+requirejs.config({
+  baseUrl: 'js'
+});
+
+define([
+  'resizer'
+], function(Resizer) {
   /** @enum {string} */
   var FileType = {
     'GIF': '',
@@ -507,4 +513,4 @@
 
   cleanupResizer();
   updateBackground();
-})();
+});

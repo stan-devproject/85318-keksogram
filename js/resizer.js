@@ -1,6 +1,10 @@
 'use strict';
 
-(function() {
+requirejs.config({
+  baseUrl: 'js'
+});
+
+define(function() {
   /**
    * @constructor
    * @param {FileBuffer} image
@@ -521,5 +525,5 @@
     this.y = y;
   };
 
-  window.Resizer = Resizer;
-})();
+  return Resizer;
+});

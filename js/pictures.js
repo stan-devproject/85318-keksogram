@@ -1,6 +1,15 @@
 'use strict';
 
-(function() {
+requirejs.config({
+  baseUrl: 'js'
+});
+
+define([
+  'gallery',
+  'photo',
+  'resizer',
+  'upload'
+], function(Gallery, Photo) {
 
   /**
    * Форма с фильтрами списка фотографий.
@@ -231,12 +240,22 @@
           // нам приходят данные с сервера.
           break;
         case 'new':
+          // Показывать только новые за последние 90 дней.
+          var threeMonth = new Date().getTime() - 90 * 24 * 60 * 60 * 1000;
+
+          filteredPicturesData = filteredPicturesData.filter(function(picture) {
+            var datePicture = new Date(picture.date).getTime();
+            return datePicture >= threeMonth;
+          });
+
+          /*
           filteredPicturesData.sort(function(a, b) {
             var aDate = new Date(a.date);
             var bDate = new Date(b.date);
 
             return bDate.getTime() - aDate.getTime();
-          });
+          });*/
+
           break;
         case 'discussed':
           filteredPicturesData.sort(function(a, b) {
@@ -291,7 +310,7 @@
       // filteredPicturesData появилась, так как мы только что запустили фильтрацию.
       gallery.setPictures(filteredPicturesData);
 
-      // Генерируем первую страницу с изображениями.
+      // Генерируем первую страницу с изображениями (и очищаем, если там есть изображения).
       picturesRender(filteredPicturesData, 0, true);
 
       // Заполняем страницу другими изображениями (еще добавляем страницы), если еще есть место.
@@ -349,7 +368,8 @@
       // Показ галереи по клику на изображение.
       photoElement.onClick = function() {
         gallery.setCurrentPicture(from + index);
-        gallery.show();
+
+        gallery.setHash(picture.url);
       };
 
     });
@@ -383,4 +403,4 @@
   // Инициализация модуля.
   picturesInitialize();
 
-})();
+});

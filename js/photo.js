@@ -1,6 +1,10 @@
 'use strict';
 
-(function() {
+requirejs.config({
+  baseUrl: 'js'
+});
+
+define(function() {
   /**
    * Таймаут ожидания загрузки, после которого загрузка считается несостоявшейся.
    * @const
@@ -90,9 +94,19 @@
   Photo.prototype._onClick = function(evt) {
     evt.preventDefault();
     if (!this.element.classList.contains('picture-load-failure')) {
-      this.onClick();
+      if (typeof this.onClick === 'function') {
+        this.onClick();
+      }
     }
   };
 
-  window.Photo = Photo;
-})();
+  /**
+   * Удаление обработчика клика по фотографии.
+   * @override
+   */
+  Photo.prototype.remove = function() {
+    this.element.removeEventListener('click', this._onClick);
+  }
+
+  return Photo;
+});

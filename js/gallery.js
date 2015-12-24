@@ -1,6 +1,10 @@
 'use strict';
 
-(function() {
+requirejs.config({
+  baseUrl: 'js'
+});
+
+define(function() {
   /**
    * @constructor
    */
@@ -13,6 +17,10 @@
     this._onCloseClick = this._onCloseClick.bind(this);
     this._onPhotoClick = this._onPhotoClick.bind(this);
     this._onDocumentKeyDown = this._onDocumentKeyDown.bind(this);
+    this._getPositionString = this._getPositionString.bind(this);
+    this._onHashChange = this._onHashChange.bind(this);
+
+    window.addEventListener('hashchange', this._onHashChange);
   };
 
   Gallery.prototype = {
@@ -27,6 +35,11 @@
      * @type {?Number} _currentPictureNumber
      */
     _currentPictureNumber: null,
+
+    /**
+     * Хранит результат применения регулярного выражения к хешу.
+     */
+    _hash: null,
 
     /**
      * Показ галереи.
@@ -59,6 +72,8 @@
 
       // Удаляем обработчик нажатия на клавишу. Ловим Esc.
       window.removeEventListener('keydown', this._onDocumentKeyDown);
+
+      location.hash = '';
     },
 
     /**
@@ -68,6 +83,10 @@
      */
     setPictures: function(data) {
       this._pictures = data;
+
+      // Запускаем обработчик изменения hash, чтобы сразу показать
+      // картинку, если переход был по прямой ссылке на картинку.
+      this._onHashChange();
     },
 
     /**
@@ -85,10 +104,59 @@
       }
 
       this._currentPictureNumber = i;
+      this.setHash(this._pictures[i].url);
 
       document.querySelector('.gallery-overlay-image').src = this._pictures[i].url;
       document.querySelector('.gallery-overlay-controls .likes-count').innerHTML = this._pictures[i].likes;
       document.querySelector('.gallery-overlay-controls .comments-count').innerHTML = this._pictures[i].comments;
+    },
+
+    /**
+     * Устанавливаем хеш.
+     * @param hash
+     */
+    setHash: function(hash) {
+      location.hash = hash ? 'photo/' + hash : '';
+    },
+
+    /**
+     * Метод находит индекс текущей фотографии по url
+     * и возвращает его.
+     * @param {string} index
+     * @returns {number}
+     * @private
+     */
+    _getPositionString: function(index) {
+      if (typeof this._pictures !== 'undefined') {
+        var length = this._pictures.length;
+
+        for (var i = 0; i < length; i++) {
+          if (this._pictures[i].url === index) {
+            return i;
+          }
+        }
+      }
+
+      return -1;
+    },
+
+    /**
+     * Проверка хеша на странице.
+     * @private
+     */
+    _onHashChange: function() {
+      this._hash = location.hash.match(/#photo\/(\S+)/);
+
+      if (this._hash && this._hash[1] !== '') {
+        var number = this._getPositionString(this._hash[1]);
+
+        if (number !== -1) {
+          this.setCurrentPicture(number);
+          this.show();
+        }
+      } else {
+        this.hide();
+      }
     },
 
     /**
@@ -104,9 +172,8 @@
      * @private
      */
     _onPhotoClick: function() {
-      console.log('dd = ' + this._currentPictureNumber);
       if (this._pictures[this._currentPictureNumber + 1]) {
-        this.setCurrentPicture(this._currentPictureNumber + 1);
+        this.setHash(this._pictures[this._currentPictureNumber + 1].url);
       }
     },
 
@@ -121,5 +188,5 @@
     }
   };
 
-  window.Gallery = Gallery;
-})();
+  return Gallery;
+});
