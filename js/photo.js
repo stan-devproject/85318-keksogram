@@ -106,7 +106,7 @@ define(function() {
    */
   Photo.prototype.remove = function() {
     this.element.removeEventListener('click', this._onClick);
-  }
+  };
 
   return Photo;
 });

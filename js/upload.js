@@ -13,7 +13,7 @@ requirejs.config({
 
 define([
   'resizer'
-], function(Resizer) {
+], function() {
   /** @enum {string} */
   var FileType = {
     'GIF': '',
