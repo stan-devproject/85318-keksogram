@@ -138,6 +138,8 @@ define([
   function getDefaultPicturesFilter() {
     var storageActiveFilter = localStorage.getItem('activePictureFilter');
 
+    console.log('test2');
+
     if (storageActiveFilter && filterPicturesMap[storageActiveFilter]) {
       return storageActiveFilter;
     }
@@ -203,6 +205,7 @@ define([
     if (lastPicture) {
       // То получаем данные о его расположении.
       var lastPictureDetails = lastPicture.getBoundingClientRect();
+      console.log(lastPictureDetails, window.innerHeight);
 
       // Пока виден во вьюпорте хотя бы верхний край последнего изображения
       // И пока есть еще неотрендеренные страницы.
@@ -241,20 +244,19 @@ define([
           break;
         case 'new':
           // Показывать только новые за последние 90 дней.
-          var threeMonth = new Date().getTime() - 90 * 24 * 60 * 60 * 1000;
+          var threeMonth = new Date().getTime() - 180 * 24 * 60 * 60 * 1000;
 
           filteredPicturesData = filteredPicturesData.filter(function(picture) {
             var datePicture = new Date(picture.date).getTime();
             return datePicture >= threeMonth;
           });
 
-          /*
           filteredPicturesData.sort(function(a, b) {
             var aDate = new Date(a.date);
             var bDate = new Date(b.date);
 
             return bDate.getTime() - aDate.getTime();
-          });*/
+          });
 
           break;
         case 'discussed':
@@ -296,6 +298,7 @@ define([
     }
 
     xhr.onload = function(evt) {
+      console.log('test1');
       loadedPicturesData = JSON.parse(evt.target.response);
 
       var defaultFilter = getDefaultPicturesFilter();

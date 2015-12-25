@@ -9,7 +9,7 @@
 
 define([
   'resizer'
-], function() {
+], function(Resizer) {
   /** @enum {string} */
   var FileType = {
     'GIF': '',

@@ -337,9 +337,15 @@ define(function() {
       // Чтобы провести валидацию получившихся новых значений координат.
       var eventOnChange = document.createEvent('Event');
       eventOnChange.initEvent('change', false, true);
-      document.getElementById('resize-x').dispatchEvent(eventOnChange);
-      document.getElementById('resize-y').dispatchEvent(eventOnChange);
-      document.getElementById('resize-side').dispatchEvent(eventOnChange);
+      if (document.getElementById('resize-x')) {
+        document.getElementById('resize-x').dispatchEvent(eventOnChange);
+      }
+      if (document.getElementById('resize-y')) {
+        document.getElementById('resize-y').dispatchEvent(eventOnChange);
+      }
+      if (document.getElementById('resize-side')) {
+        document.getElementById('resize-side').dispatchEvent(eventOnChange);
+      }
     },
 
     /**

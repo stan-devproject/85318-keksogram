@@ -6,8 +6,8 @@ define(function() {
    * дочернего конструктора child методы и свойства родительского
    * конструктора parent через пустой конструктор.
    *
-   * @param {function} Child
-   * @param {function} Parent
+   * @param {object} Child
+   * @param {object} Parent
    */
   var inherit = function(Child, Parent) {
     var EmptyConstructor = function() {};
