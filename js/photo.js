@@ -1,9 +1,5 @@
 'use strict';
 
-requirejs.config({
-  baseUrl: 'js'
-});
-
 define(function() {
   /**
    * Таймаут ожидания загрузки, после которого загрузка считается несостоявшейся.

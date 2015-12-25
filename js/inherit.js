@@ -1,9 +1,5 @@
 'use strict';
 
-requirejs.config({
-  baseUrl: 'js'
-});
-
 define(function() {
   /**
    * Функция принимает два конструктора и записывает в прототип
